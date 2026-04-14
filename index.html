@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우리반 추억 사진관</title>
-    <!-- Tailwind CSS (CDN) -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <style>
-        /* 웹폰트 적용 (나눔스퀘어 네오) */
+        /* 웹폰트 적용 */
         @import url('https://webfontworld.github.io/NanumSquareNeo/NanumSquareNeo.css');
         body { font-family: 'NanumSquareNeo', sans-serif; }
 
@@ -20,71 +23,126 @@
             position: relative;
         }
 
-        /* 개별 슬라이드 기본 설정 */
-        .slide {
+        /* 📸 액자 디자인 CSS 📸 */
+        .slide-wrapper {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-center;
             opacity: 0;
-            transition: opacity 1.5s ease-in-out, transform 4s ease-in-out;
-            will-change: opacity, transform;
-            background-color: #111;
+            transition: opacity 1.5s ease-in-out;
+            padding: 20px;
+        }
+        .slide-wrapper.active { opacity: 1; }
+
+        /* 슬라이드 내부 컨테이너 (움직임 효과 적용 대상) */
+        .slide-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+            max-height: 100%;
+            transition: transform 4s ease-in-out;
+            will-change: transform;
         }
 
-        /* 활성화된 슬라이드 */
-        .slide.active { opacity: 1; }
+        /* 이미지 기본 */
+        .slide-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* 1. 기본 (None) */
+        .frame-none .slide-img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+
+        /* 2. 폴라로이드 감성 */
+        .frame-polaroid {
+            background-color: #f9f9f9;
+            padding: 1.5vw 1.5vw 6vw 1.5vw;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .frame-polaroid .slide-img { max-height: calc(90vh - 7.5vw); }
+
+        /* 3. 클래식 원목 액자 */
+        .frame-wood {
+            background-color: #fff;
+            padding: 1vw;
+            border: 20px solid #5c4033;
+            border-image: linear-gradient(45deg, #3e2723, #8d6e63, #3e2723) 1;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.7);
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .frame-wood .slide-img { max-height: calc(90vh - 2vw - 40px); }
+
+        /* 4. 영화 필름 스타일 */
+        .frame-film {
+            background-color: #000;
+            padding: 3vw 0;
+            background-image: 
+                repeating-linear-gradient(to right, transparent, transparent 15px, #fff 15px, #fff 25px),
+                repeating-linear-gradient(to right, transparent, transparent 15px, #fff 15px, #fff 25px);
+            background-position: top, bottom;
+            background-size: 100% 20px;
+            background-repeat: no-repeat;
+            max-width: 95vw;
+            max-height: 90vh;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .frame-film .slide-img { 
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+            max-height: calc(90vh - 6vw); 
+        }
 
         /* 전환 효과들 */
         .effect-fade { transform: scale(1); }
-        .slide.active.effect-fade { transform: scale(1.01); }
+        .slide-wrapper.active .effect-fade { transform: scale(1.02); }
         .effect-zoom { transform: scale(1); }
-        .slide.active.effect-zoom { transform: scale(1.06); }
-        .effect-pan-right { transform: translateX(-1.5%) scale(1.02); }
-        .slide.active.effect-pan-right { transform: translateX(0) scale(1.02); }
-        .effect-pan-left { transform: translateX(1.5%) scale(1.02); }
-        .slide.active.effect-pan-left { transform: translateX(0) scale(1.02); }
+        .slide-wrapper.active .effect-zoom { transform: scale(1.08); }
+        .effect-pan-right { transform: translateX(-2%) scale(1.03); }
+        .slide-wrapper.active .effect-pan-right { transform: translateX(0) scale(1.03); }
+        .effect-pan-left { transform: translateX(2%) scale(1.03); }
+        .slide-wrapper.active .effect-pan-left { transform: translateX(0) scale(1.03); }
 
-        /* 컨트롤 패널 표시 효과 */
-        #slideshow-controls {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        /* UI 컨트롤 패널 */
+        #slideshow-controls { opacity: 0; transition: opacity 0.3s ease; }
         #slideshow-container:hover #slideshow-controls,
-        #slideshow-container:active #slideshow-controls {
-            opacity: 1;
-        }
+        #slideshow-container:active #slideshow-controls { opacity: 1; }
         
-        /* 스크롤바 세팅 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-blue-200">
 
-    <!-- 커스텀 알림(Toast) 컨테이너 -->
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none w-11/12 max-w-md"></div>
 
-    <!-- 메인 설정 화면 -->
     <main id="setup-view" class="flex-grow flex items-center justify-center p-4 sm:p-8">
         <div class="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
-            <!-- 헤더 영역 -->
-            <header class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white text-center relative overflow-hidden">
+            <header class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white text-center relative overflow-hidden flex flex-col items-center">
                 <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-                <h1 class="text-3xl sm:text-4xl font-bold mb-3 relative z-10 drop-shadow-md">
+                
+                <h1 id="main-title-display" class="text-3xl sm:text-4xl font-bold mb-3 relative z-10 drop-shadow-md">
                     <i class="fas fa-camera-retro mr-3 text-blue-200"></i>우리반 추억 사진관
                 </h1>
-                <p class="text-blue-100 font-light relative z-10">아이들과 함께한 소중한 순간들을 모아보세요</p>
+                
+                <button onclick="openSettingsModal()" class="relative z-10 bg-white/20 hover:bg-white/40 text-white border border-white/30 px-4 py-2 rounded-full text-sm font-medium transition flex items-center backdrop-blur-sm mt-2">
+                    <i class="fas fa-cog mr-2"></i> 제목 및 디자인 설정
+                </button>
             </header>
 
-            <!-- 설정 영역 -->
             <div class="p-6 sm:p-10 space-y-8">
-                
-                <!-- 1. 사진 불러오기 -->
                 <section>
                     <div class="flex items-center mb-4">
                         <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">1</div>
@@ -97,7 +155,6 @@
                                 <i class="fas fa-folder-open text-2xl text-yellow-500"></i>
                             </div>
                             <h3 class="font-bold text-slate-700 mt-3 text-lg">폴더 단위로 추가</h3>
-                            <p class="text-sm text-slate-500 mt-1">폴더 속 모든 사진을 한 번에</p>
                             <input type="file" id="folder-upload" webkitdirectory directory multiple class="hidden" accept="image/*" onchange="handleFiles(this.files)">
                         </div>
                         
@@ -106,7 +163,6 @@
                                 <i class="fas fa-images text-2xl text-green-500"></i>
                             </div>
                             <h3 class="font-bold text-slate-700 mt-3 text-lg">사진 파일로 추가</h3>
-                            <p class="text-sm text-slate-500 mt-1">여러 장의 사진을 선택해서</p>
                             <input type="file" id="file-upload" multiple class="hidden" accept="image/*" onchange="handleFiles(this.files)">
                         </div>
                     </div>
@@ -116,7 +172,7 @@
                             <i class="fas fa-check-circle text-slate-400 mr-2" id="status-icon"></i>
                             <span class="text-slate-600">준비된 사진: <strong id="photo-count" class="text-blue-600 text-xl mx-1">0</strong> 장</span>
                         </div>
-                        <button onclick="clearPhotos()" class="text-sm font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition hidden" id="clear-photos-btn">
+                        <button onclick="clearPhotos()" class="text-sm font-medium text-red-500 hover:bg-red-100 px-3 py-1 rounded transition hidden" id="clear-photos-btn">
                             <i class="fas fa-trash-alt mr-1"></i>비우기
                         </button>
                     </div>
@@ -125,7 +181,6 @@
                 <hr class="border-slate-100">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- 2. 시간 설정 -->
                     <section class="flex flex-col">
                         <div class="flex items-center mb-4">
                             <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">2</div>
@@ -143,92 +198,31 @@
                         </div>
                     </section>
 
-                    <!-- 3. AI 추억 마법사 -->
-                    <section class="flex flex-col">
+                    <section id="music-section" class="flex flex-col transition-all duration-500 rounded-2xl">
                         <div class="flex items-center mb-4">
-                            <div class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">3</div>
-                            <h2 class="text-xl font-bold text-indigo-800 flex items-center">
-                                ✨ AI BGM 마법사 <span class="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full ml-2 font-medium relative -top-1">검색어 추천</span>
-                            </h2>
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">3</div>
+                            <h2 class="text-xl font-bold text-slate-700">배경 음악 (선택)</h2>
                         </div>
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-2xl border border-indigo-100 flex-1 flex flex-col justify-center relative overflow-hidden">
-                            <div class="absolute -bottom-4 -right-2 opacity-10">
-                                <i class="fas fa-wand-magic-sparkles text-6xl text-indigo-600"></i>
-                            </div>
-                            <p class="text-sm text-indigo-700 mb-3 relative z-10">어떤 행사였나요? 감동을 더해줄 배경음악 검색어를 AI가 대신 찾아드려요!</p>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col justify-center">
                             <div class="flex flex-col gap-2 relative z-10">
-                                <input type="text" id="ai-context" placeholder="예: 눈물의 졸업식, 신나는 가을 운동회" class="w-full px-3 py-2 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm" onkeypress="if(event.key === 'Enter') generateAIRecommendations()">
-                                <button id="ai-generate-btn" onclick="generateAIRecommendations()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold shadow transition text-sm flex items-center justify-center">
-                                    <i class="fas fa-search mr-1"></i> BGM 검색어 추천받기
-                                </button>
+                                <div class="relative w-full">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fab fa-youtube text-red-500"></i></div>
+                                    <input type="text" id="youtube-link" placeholder="유튜브 BGM 링크 붙여넣기" class="w-full pl-10 pr-20 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-sm">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="applyYoutubeLink()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl text-sm font-bold border border-blue-200"><i class="fas fa-check mr-1"></i> 적용</button>
+                                    <button onclick="searchYoutube()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-medium border border-slate-200"><i class="fas fa-search mr-1"></i> 검색</button>
+                                </div>
+                                <div class="relative mt-2">
+                                    <input type="file" id="audio-upload" accept="audio/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 border border-slate-200 rounded-xl bg-white cursor-pointer shadow-sm">
+                                </div>
                             </div>
                         </div>
                     </section>
                 </div>
 
-                <!-- 4. 음악 설정 -->
-                <section id="music-section" class="transition-all duration-500 rounded-2xl">
-                    <div class="flex items-center mb-4">
-                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">4</div>
-                        <h2 class="text-xl font-bold text-slate-700">배경 음악 (선택)</h2>
-                    </div>
-                    
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative overflow-hidden">
-                        <!-- 유튜브 링크 설정 영역 -->
-                        <div class="flex flex-col sm:flex-row gap-2 relative z-10">
-                            <div class="relative flex-1">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fab fa-youtube text-red-500"></i>
-                                </div>
-                                <input type="text" id="youtube-link" placeholder="유튜브 링크 또는 검색어 (AI 추천어가 자동입력됩니다)" class="w-full pl-10 pr-24 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-sm" oninput="hideYtApplied()">
-                                <div id="yt-applied" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none hidden">
-                                    <span class="text-green-600 text-sm font-bold bg-white px-1"><i class="fas fa-check-circle"></i> 준비됨</span>
-                                </div>
-                            </div>
-                            <button id="yt-apply-btn" onclick="applyYoutubeLink()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl transition text-sm font-bold border border-blue-200 whitespace-nowrap">
-                                <i class="fas fa-check mr-1"></i> 적용
-                            </button>
-                            <button onclick="searchYoutube()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl transition text-sm font-medium border border-slate-200 whitespace-nowrap">
-                                <i class="fas fa-search mr-1"></i> 유튜브 열기
-                            </button>
-                        </div>
-                        
-                        <!-- 재생 불가 안내 문구 및 테스트 버튼 추가 -->
-                        <div class="mt-3 text-sm text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 shadow-sm">
-                            <div class="flex items-start">
-                                <i class="fas fa-exclamation-triangle mt-1 mr-3 text-rose-500 text-lg"></i>
-                                <div>
-                                    <strong class="text-base">혹시 소리가 계속 안 나시나요?</strong><br>
-                                    유튜브 공식 음원은 '외부 사이트 재생(퍼가기)'이 막혀있는 경우가 많습니다. 일반 개인이 올린 <b>'OOO BGM 모음'</b> 영상으로 링크를 바꿔보세요!
-                                    <div class="mt-3">
-                                        <button onclick="insertTestLink()" class="bg-white border border-rose-300 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-lg shadow-sm transition font-bold">
-                                            <i class="fas fa-music mr-1"></i> 100% 재생되는 음악으로 테스트해보기
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-center text-slate-400 text-xs my-4">
-                            <span class="bg-slate-200 h-[1px] flex-1"></span>
-                            <span class="px-3 font-bold text-slate-500">또는</span>
-                            <span class="bg-slate-200 h-[1px] flex-1"></span>
-                        </div>
-                        
-                        <!-- 로컬 파일 업로드 -->
-                        <div class="relative z-10">
-                            <input type="file" id="audio-upload" accept="audio/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-xl bg-white cursor-pointer pr-24 shadow-sm" onchange="checkAudioFile()">
-                            <div id="file-applied" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none hidden">
-                                <span class="text-green-600 text-sm font-bold bg-white px-1"><i class="fas fa-check-circle"></i> 준비됨</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 시작 버튼 영역 -->
-                <div class="pt-2 pb-2 text-center">
-                    <button onclick="startSlideshow()" class="group relative inline-flex items-center justify-center px-12 py-5 text-xl font-bold text-white transition-all duration-200 bg-blue-600 rounded-full hover:bg-blue-700 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-blue-300 overflow-hidden w-full sm:w-auto">
-                        <span class="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+                <div class="pt-4 pb-2 text-center">
+                    <button onclick="startSlideshow()" class="group relative inline-flex items-center justify-center px-12 py-5 text-xl font-bold text-white transition-all duration-200 bg-blue-600 rounded-full hover:bg-blue-700 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-blue-300 w-full sm:w-auto">
                         <i class="fas fa-play mr-3 group-hover:scale-110 transition-transform"></i>
                         <span>슬라이드쇼 시작</span>
                     </button>
@@ -237,516 +231,353 @@
         </div>
     </main>
 
-    <!-- 슬라이드쇼 실행 화면 -->
-    <div id="slideshow-view" class="hidden fixed inset-0 z-50 bg-black flex flex-col w-full h-full">
-        <!-- 슬라이드 이미지 표시 영역 -->
-        <div id="slideshow-container" class="flex-1 w-full h-full relative cursor-none" onmousemove="showControlsTemporary()">
-            <!-- 자바스크립트를 통해 이미지들이 이 안에 들어갑니다 -->
-        </div>
-
-        <!-- ❗청소시간 앱과 동일한 방식의 보이지 않는 유튜브 플레이어 컨테이너❗ -->
-        <!-- 크기를 유지한 채 화면 밖으로 멀리 보내서, 브라우저가 정상적인 플레이어로 인식하게 속입니다. -->
-        <div id="youtube-player-container" style="position: absolute; top: -9999px; left: -9999px; width: 300px; height: 300px; opacity: 0.01; overflow: hidden; pointer-events: none; z-index: -1;">
-            <div id="youtube-player"></div>
-        </div>
-
-        <!-- 슬라이드 컨트롤 패널 -->
-        <div id="slideshow-controls" class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-center text-white pb-6 sm:pb-8 z-50">
-            
-            <!-- 왼쪽: 종료 버튼 -->
-            <button onclick="stopSlideshow()" class="text-white hover:text-red-400 bg-white/10 hover:bg-white/20 px-4 py-2.5 rounded-xl backdrop-blur-md transition flex items-center mb-4 sm:mb-0 text-sm font-medium border border-white/10">
-                <i class="fas fa-arrow-left mr-2"></i> 설정으로 돌아가기
-            </button>
-            
-            <!-- 중앙: 재생 컨트롤 -->
-            <div class="flex items-center space-x-6">
-                <button onclick="prevSlide()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/30 transition text-xl backdrop-blur-md">
-                    <i class="fas fa-step-backward"></i>
-                </button>
-                <button onclick="togglePlayPause()" id="play-pause-btn" class="w-16 h-16 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)]">
-                    <i class="fas fa-pause"></i>
-                </button>
-                <button onclick="nextSlide()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/30 transition text-xl backdrop-blur-md">
-                    <i class="fas fa-step-forward"></i>
-                </button>
+    <div id="settings-modal" class="hidden fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="settings-modal-content">
+            <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
+                <h2 class="text-2xl font-bold"><i class="fas fa-palette mr-2"></i>스타일 설정</h2>
+                <button onclick="closeSettingsModal()" class="text-white/70 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-
-            <!-- 오른쪽: 볼륨 조절 -->
-            <div class="flex items-center space-x-3">
-                <div class="hidden sm:flex items-center bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
-                    <i class="fas fa-volume-up text-sm mr-3"></i>
-                    <input type="range" id="volume-slider" min="0" max="100" value="70" oninput="setVolume(this.value)" class="w-24 accent-white h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer">
+            <div class="p-8 space-y-6">
+                <div>
+                    <label class="block text-slate-700 font-bold mb-2">슬라이드쇼 제목</label>
+                    <input type="text" id="setting-title" value="우리반 추억 사진관" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+                    <p class="text-xs text-slate-400 mt-1">이 제목은 메인 화면과 슬라이드쇼 시작 화면에 나타납니다.</p>
                 </div>
+                
+                <div>
+                    <label class="block text-slate-700 font-bold mb-3">사진 액자(프레임) 디자인</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-none" class="peer hidden" checked>
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-image text-2xl text-slate-400 mb-2"></i>
+                                <div class="font-bold text-slate-700">기본 (없음)</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-polaroid" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-sticky-note text-2xl text-slate-400 mb-2"></i>
+                                <div class="font-bold text-slate-700">폴라로이드</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-wood" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-border-all text-2xl text-slate-400 mb-2"></i>
+                                <div class="font-bold text-slate-700">원목 액자</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-film" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-film text-2xl text-slate-400 mb-2"></i>
+                                <div class="font-bold text-slate-700">영화 필름</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-slate-50 border-t border-slate-100 text-right">
+                <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition">저장하기</button>
             </div>
         </div>
     </div>
 
-    <!-- 로컬 오디오 -->
+    <div id="slideshow-view" class="hidden fixed inset-0 z-50 bg-[#111] flex flex-col w-full h-full">
+        <div id="slideshow-title-overlay" class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none opacity-0 transition-opacity duration-1000 bg-black/60">
+            <h1 id="overlay-title-text" class="text-4xl md:text-7xl text-white font-bold text-center drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] px-8"></h1>
+        </div>
+
+        <div id="slideshow-container" class="flex-1 w-full h-full relative cursor-none" onmousemove="showControlsTemporary()"></div>
+
+        <div id="youtube-player-container" style="position: absolute; top: -9999px; left: -9999px; width: 300px; height: 300px; opacity: 0.01; pointer-events: none; z-index: -1;">
+            <div id="youtube-player"></div>
+        </div>
+
+        <div id="slideshow-controls" class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-8 flex justify-between items-center text-white pb-6 z-50">
+            <button onclick="stopSlideshow()" class="text-white hover:text-red-400 bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md transition flex items-center text-sm font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> 설정으로
+            </button>
+            <div class="flex items-center space-x-6">
+                <button onclick="prevSlide()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/30 transition text-xl backdrop-blur-md"><i class="fas fa-step-backward"></i></button>
+                <button onclick="togglePlayPause()" id="play-pause-btn" class="w-16 h-16 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-2xl"><i class="fas fa-pause"></i></button>
+                <button onclick="nextSlide()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/30 transition text-xl backdrop-blur-md"><i class="fas fa-step-forward"></i></button>
+            </div>
+            <div class="flex items-center bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
+                <i class="fas fa-volume-up text-sm mr-3"></i>
+                <input type="range" id="volume-slider" min="0" max="100" value="70" oninput="setVolume(this.value)" class="w-24 accent-white h-1.5 bg-white/30 rounded-lg cursor-pointer">
+            </div>
+        </div>
+    </div>
     <audio id="local-audio" loop></audio>
 
     <script>
         /* =========================================
-           유튜브 API 글로벌 셋업 (청소 앱 방식 완벽 이식)
+           ❗ Firebase & 데이터 저장 로직 ❗
         ========================================= */
-        let ytPlayer = null;
-        let isYtReady = false;
+        
+        // 선생님의 Firebase 프로젝트 설정값을 여기에 넣으시면 기기가 바뀌어도 동기화됩니다.
+        // (입력하지 않아도 현재 컴퓨터의 로컬스토리지에 안전하게 자동 저장됩니다!)
+        const firebaseConfig = {
+            // apiKey: "YOUR_API_KEY",
+            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            // projectId: "YOUR_PROJECT_ID"
+        };
 
-        // API 스크립트 동적 로드 (청소 앱과 동일)
+        let db = null;
+        try {
+            if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey) {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                console.log("Firebase 연동 성공!");
+            }
+        } catch(e) { console.warn("Firebase 설정 없음. 로컬 저장소를 사용합니다."); }
+
+        // 전역 설정 변수
+        let appSettings = {
+            title: "우리반 추억 사진관",
+            frameStyle: "frame-none"
+        };
+
+        // 설정 불러오기 (앱 시작 시 실행)
+        async function loadSettings() {
+            // 1. 로컬 스토리지 확인 (빠른 로딩)
+            const localSet = localStorage.getItem('classPhotoSettings');
+            if (localSet) appSettings = JSON.parse(localSet);
+
+            // 2. Firebase 확인 (우선 적용)
+            if (db) {
+                try {
+                    const doc = await db.collection("settings").doc("mainConfig").get();
+                    if (doc.exists) appSettings = doc.data();
+                } catch(e) { console.error("Firebase 불러오기 실패", e); }
+            }
+            
+            // 화면 UI 업데이트
+            document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
+            document.getElementById('setting-title').value = appSettings.title;
+            document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
+        }
+
+        // 설정 저장하기
+        async function saveSettings() {
+            appSettings.title = document.getElementById('setting-title').value.trim() || "우리반 추억 사진관";
+            appSettings.frameStyle = document.querySelector('input[name="frame-style"]:checked').value;
+
+            // 화면 즉시 적용
+            document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
+            
+            // 1. 로컬 저장 (안전장치)
+            localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings));
+
+            // 2. Firebase 저장
+            if (db) {
+                try {
+                    await db.collection("settings").doc("mainConfig").set(appSettings);
+                } catch(e) { console.error("Firebase 저장 실패", e); }
+            }
+
+            closeSettingsModal();
+            showToast("디자인 설정이 저장되었습니다!", "success");
+        }
+
+        // 설정 모달 열고 닫기
+        function openSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('settings-modal-content');
+            modal.classList.remove('hidden');
+            // 부드러운 애니메이션
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            });
+        }
+        function closeSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('settings-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // 페이지 로드 시 설정 불러오기 실행
+        window.addEventListener('DOMContentLoaded', loadSettings);
+
+        /* =========================================
+           유튜브 및 슬라이드쇼 기존 로직 (수정본)
+        ========================================= */
+        let ytPlayer = null; let isYtReady = false;
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        window.onYouTubeIframeAPIReady = function() { isYtReady = true; };
 
-        // ❗중요❗ 청소앱처럼 '준비 완료' 신호만 받고 플레이어는 아직 만들지 않습니다.
-        // 플레이어는 선생님이 [슬라이드쇼 시작] 버튼을 클릭하는 순간! 만들어야 합니다.
-        window.onYouTubeIframeAPIReady = function() {
-            isYtReady = true; 
-        };
-
-        /* =========================================
-           Gemini API 설정 (AI BGM 추천 마법사)
-        ========================================= */
-        const apiKey = ""; // 런타임에 주입됨
-
-        async function generateAIRecommendations() {
-            const contextInput = document.getElementById('ai-context').value.trim();
-            if (!contextInput) {
-                showToast('어떤 행사였는지 짧게 입력해주세요! (예: 첫눈 오던 날)', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('ai-generate-btn');
-            const originalBtnHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 딱 맞는 브금 찾는 중...';
-            btn.disabled = true;
-
-            const prompt = `선생님이 입력한 행사: "${contextInput}"
-이 행사에 어울리는 유튜브 BGM 검색 키워드(예: '감동적인 피아노 bgm', '신나는 체육대회 브금')를 짧게 하나만 추천해주세요.`;
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            bgmSearchKeyword: { type: "STRING" }
-                        },
-                        required: ["bgmSearchKeyword"]
-                    }
-                }
-            };
-
-            let delay = 1000;
-            let success = false;
-            let result = null;
-
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error('API Error');
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    result = JSON.parse(text);
-                    success = true;
-                    break;
-                } catch (e) {
-                    if (i < 4) await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
-            }
-
-            btn.innerHTML = originalBtnHTML;
-            btn.disabled = false;
-
-            if (success && result) {
-                const ytInput = document.getElementById('youtube-link');
-                ytInput.value = result.bgmSearchKeyword;
-                hideYtApplied(); // 기존에 적용된 링크가 있다면 초기화
-                
-                // 시각적 강조 효과
-                const musicSection = document.getElementById('music-section');
-                musicSection.classList.add('ring-4', 'ring-indigo-300', 'bg-indigo-50/50');
-                setTimeout(() => {
-                    musicSection.classList.remove('ring-4', 'ring-indigo-300', 'bg-indigo-50/50');
-                }, 2000);
-                
-                showToast('✨ 추천 검색어가 유튜브 입력칸에 들어갔습니다! [유튜브 열기]를 눌러보세요.', 'success');
-            } else {
-                showToast('AI 통신에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
-            }
-        }
-
-        /* =========================================
-           커스텀 Toast UI (alert 대체)
-        ========================================= */
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const isError = type === 'error';
-            
             toast.className = `px-5 py-3 rounded-2xl text-white font-bold shadow-lg transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-3 w-full backdrop-blur-md ${isError ? 'bg-red-500/90' : 'bg-green-500/90'}`;
             toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} text-xl"></i> <span class="leading-tight">${message}</span>`;
-            
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'));
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-20px]');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-20px]'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        /* =========================================
-           기존 슬라이드쇼 로직
-        ========================================= */
-        let images = [];              
-        let currentIndex = 0;         
-        let slideIntervalId = null;   
-        let isPlaying = false;        
-        let slideDuration = 4000;     
-        let controlsTimeout = null;   
-        
+        let images = []; let currentIndex = 0; let slideIntervalId = null; let isPlaying = false; let slideDuration = 4000; let controlsTimeout = null;
         const effects = ['effect-fade', 'effect-zoom', 'effect-pan-right', 'effect-pan-left'];
-
-        const photoCountEl = document.getElementById('photo-count');
-        const statusIcon = document.getElementById('status-icon');
-        const clearPhotosBtn = document.getElementById('clear-photos-btn');
-        const container = document.getElementById('slideshow-container');
-        const setupView = document.getElementById('setup-view');
-        const slideshowView = document.getElementById('slideshow-view');
-        const playPauseBtn = document.getElementById('play-pause-btn');
 
         function handleFiles(files) {
             if (!files || files.length === 0) return;
-            let addedCount = 0;
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) {
-                    images.push(URL.createObjectURL(files[i]));
-                    addedCount++;
-                }
+                if (files[i].type.startsWith('image/')) images.push(URL.createObjectURL(files[i]));
             }
-            if (addedCount > 0) {
-                updatePhotoCount();
-                statusIcon.classList.remove('fa-check-circle', 'text-slate-400');
-                statusIcon.classList.add('fa-spinner', 'fa-spin', 'text-blue-500');
-                setTimeout(() => {
-                    statusIcon.classList.remove('fa-spinner', 'fa-spin');
-                    statusIcon.classList.add('fa-check-circle', 'text-green-500');
-                }, 500);
-            }
+            document.getElementById('photo-count').innerText = images.length;
+            document.getElementById('clear-photos-btn').classList.remove('hidden');
         }
-
-        function updatePhotoCount() {
-            photoCountEl.innerText = images.length;
-            if (images.length > 0) {
-                clearPhotosBtn.classList.remove('hidden');
-                statusIcon.classList.replace('text-slate-400', 'text-green-500');
-            } else {
-                clearPhotosBtn.classList.add('hidden');
-                statusIcon.classList.replace('text-green-500', 'text-slate-400');
-            }
-        }
-
         function clearPhotos() {
-            images.forEach(url => URL.revokeObjectURL(url)); 
-            images = [];
-            document.getElementById('folder-upload').value = "";
-            document.getElementById('file-upload').value = "";
-            updatePhotoCount();
-            showToast('사진이 모두 지워졌습니다.', 'success');
-        }
-
-        function searchYoutube() {
-            const inputVal = document.getElementById('youtube-link').value.trim();
-            const query = inputVal ? encodeURIComponent(inputVal) : encodeURIComponent('학예회 감동 bgm');
-            window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+            images = []; document.getElementById('photo-count').innerText = 0;
+            document.getElementById('clear-photos-btn').classList.add('hidden');
+            showToast('사진이 비워졌습니다.', 'success');
         }
 
         function getYouTubeId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-            const match = url.match(regExp);
+            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/);
             return (match && match[2].length === 11) ? match[2] : null;
         }
-
-        function hideYtApplied() {
-            document.getElementById('yt-applied').classList.add('hidden');
-            const btn = document.getElementById('yt-apply-btn');
-            btn.innerHTML = '<i class="fas fa-check mr-1"></i> 적용';
-            btn.className = 'bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl transition text-sm font-bold border border-blue-200 whitespace-nowrap';
-        }
-
+        function searchYoutube() { window.open('https://www.youtube.com/results?search_query=감동적인 bgm', '_blank'); }
         function applyYoutubeLink() {
             const url = document.getElementById('youtube-link').value.trim();
-            if (!url) { showToast("유튜브 링크를 입력해주세요."); return; }
-
-            const videoId = getYouTubeId(url);
-            const ytApplied = document.getElementById('yt-applied');
-            const btn = document.getElementById('yt-apply-btn');
-            
-            if (videoId) {
-                ytApplied.classList.remove('hidden');
-                btn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> 적용됨';
-                btn.className = 'bg-green-50 hover:bg-green-100 text-green-600 px-4 py-2.5 rounded-xl transition text-sm font-bold border border-green-200 whitespace-nowrap';
-
-                document.getElementById('audio-upload').value = '';
-                document.getElementById('file-applied').classList.add('hidden');
-                showToast("유튜브 링크가 적용되었습니다.", "success");
-            } else {
-                showToast("올바른 유튜브 영상 링크가 아닙니다. (예: https://www.youtube.com/watch?v=...)");
-                hideYtApplied();
-            }
+            if (getYouTubeId(url)) showToast("유튜브 링크가 적용되었습니다.", "success");
+            else showToast("올바른 유튜브 링크를 넣어주세요.");
         }
 
-        function checkAudioFile() {
-            const file = document.getElementById('audio-upload').files[0];
-            const fileApplied = document.getElementById('file-applied');
-            
-            if (file) {
-                fileApplied.classList.remove('hidden');
-                document.getElementById('youtube-link').value = '';
-                document.getElementById('yt-applied').classList.add('hidden');
-                hideYtApplied();
-                showToast("로컬 오디오 파일이 적용되었습니다.", "success");
-            } else {
-                fileApplied.classList.add('hidden');
-            }
-        }
-
-        function insertTestLink() {
-            const ytInput = document.getElementById('youtube-link');
-            // 외부 재생이 100% 허용된 Lofi BGM 스트리밍 링크
-            ytInput.value = "https://www.youtube.com/watch?v=jfKfPfyJRdk"; 
-            applyYoutubeLink();
-            showToast("테스트 음악 링크가 적용되었습니다! 슬라이드쇼를 켜보세요.", "success");
-        }
-
-        /* ❗클릭 시 즉시 오디오 재생 (청소앱 방식 100% 적용)❗ */
         function setupAudio() {
-            const localAudioFile = document.getElementById('audio-upload').files[0];
+            const localFile = document.getElementById('audio-upload').files[0];
             const ytLink = document.getElementById('youtube-link').value.trim();
             const localAudio = document.getElementById('local-audio');
-            const volumeVal = document.getElementById('volume-slider').value;
+            const vol = document.getElementById('volume-slider').value;
             
-            // 기존 재생 모두 정지
-            localAudio.pause();
-            localAudio.src = '';
-            
-            // 로컬 파일이 선택된 경우
-            if (localAudioFile) {
-                if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-                    ytPlayer.pauseVideo();
-                }
-                localAudio.src = URL.createObjectURL(localAudioFile);
-                localAudio.volume = volumeVal / 100;
-                localAudio.play().catch(e => {
-                    console.log("로컬 재생 오류", e);
-                    showToast("소리가 막혔습니다. 화면을 클릭해 주세요.", "error");
-                });
-            } 
-            // 유튜브 링크가 선택된 경우
-            else if (ytLink) {
-                const videoId = getYouTubeId(ytLink);
-                if (videoId) {
-                    // 이미 플레이어가 만들어져 있다면 영상만 쏙 바꿔서 재생합니다.
+            localAudio.pause(); localAudio.src = '';
+            if (localFile) {
+                if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+                localAudio.src = URL.createObjectURL(localFile); localAudio.volume = vol/100; localAudio.play();
+            } else if (ytLink) {
+                const vid = getYouTubeId(ytLink);
+                if (vid && isYtReady) {
                     if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                        ytPlayer.loadVideoById(videoId);
-                        ytPlayer.setVolume(volumeVal);
-                    } 
-                    // 아직 플레이어가 없다면, 선생님이 [시작] 버튼을 누른 "바로 이 순간!" 플레이어를 생성합니다.
-                    else if (isYtReady) {
-                        ytPlayer = new YT.Player('youtube-player', {
-                            height: '300',
-                            width: '300',
-                            videoId: videoId,
-                            playerVars: {
-                                'autoplay': 1,
-                                'controls': 0,
-                                'loop': 1,
-                                'playlist': videoId,
-                                'origin': window.location.origin // 청소앱의 비밀 무기 (보안 통과)
-                            },
-                            events: {
-                                'onReady': function(event) {
-                                    event.target.setVolume(volumeVal);
-                                    event.target.playVideo(); // 만들어지자마자 재생!
-                                },
-                                'onStateChange': function(event) {
-                                    // 노래가 끝나면 처음으로 되돌려 무한 반복
-                                    if (event.data === 0) {
-                                        event.target.seekTo(0);
-                                        event.target.playVideo();
-                                    }
-                                },
-                                'onError': function(event) {
-                                    // 150, 101 에러는 원작자가 외부 재생을 막은 경우
-                                    if(event.data === 150 || event.data === 101) {
-                                        showToast("앗! 이 영상은 원작자가 외부 재생을 막아두었어요. 다른 BGM 모음 영상을 넣어주세요!", "error");
-                                        stopSlideshow();
-                                    }
-                                }
-                            }
-                        });
+                        ytPlayer.loadVideoById(vid); ytPlayer.setVolume(vol);
                     } else {
-                        showToast("유튜브 서버와 연결 중입니다. 1~2초 뒤 다시 시작을 눌러주세요.", "error");
+                        ytPlayer = new YT.Player('youtube-player', {
+                            height: '300', width: '300', videoId: vid,
+                            playerVars: { 'autoplay': 1, 'controls': 0, 'loop': 1, 'playlist': vid, 'origin': window.location.origin },
+                            events: { 'onReady': e => { e.target.setVolume(vol); e.target.playVideo(); }, 'onStateChange': e => { if(e.data===0) e.target.playVideo(); } }
+                        });
                     }
                 }
             }
         }
 
         function setVolume(val) {
-            const volume = val / 100;
-            document.getElementById('local-audio').volume = volume;
-            if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
-                ytPlayer.setVolume(val);
-            }
+            document.getElementById('local-audio').volume = val/100;
+            if (ytPlayer && typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(val);
         }
 
         function startSlideshow() {
-            if (images.length === 0) {
-                showToast("먼저 사진을 한 장 이상 추가해주세요.");
-                return;
-            }
-
-            let durationInput = parseFloat(document.getElementById('duration-val').value);
-            if (isNaN(durationInput) || durationInput <= 0) durationInput = 4;
-            slideDuration = durationInput * 1000;
-
-            setupView.classList.add('hidden');
-            slideshowView.classList.remove('hidden');
+            if (images.length === 0) { showToast("사진을 먼저 추가해주세요."); return; }
+            slideDuration = (parseFloat(document.getElementById('duration-val').value) || 4) * 1000;
             
+            document.getElementById('setup-view').classList.add('hidden');
+            document.getElementById('slideshow-view').classList.remove('hidden');
             showControlsTemporary();
+            setupAudio();
             
-            // ❗핵심❗ 시작 버튼 누른 직후 곧바로 유튜브 셋업 실행
-            setupAudio(); 
-            
-            currentIndex = 0;
-            container.innerHTML = ''; 
+            // 타이틀 오버레이 표시
+            const overlay = document.getElementById('slideshow-title-overlay');
+            document.getElementById('overlay-title-text').innerText = appSettings.title;
+            overlay.classList.remove('opacity-0');
+            setTimeout(() => overlay.classList.add('opacity-0'), 4000);
+
+            currentIndex = 0; document.getElementById('slideshow-container').innerHTML = '';
             showSlide(currentIndex);
-            
-            isPlaying = true;
-            slideIntervalId = setInterval(nextSlide, slideDuration);
+            isPlaying = true; slideIntervalId = setInterval(nextSlide, slideDuration);
             updatePlayPauseIcon();
         }
 
+        /* ❗ 액자가 적용된 슬라이드 생성 로직 ❗ */
         function showSlide(index) {
+            // 1. 투명도를 조절할 최상위 래퍼
+            const wrapper = document.createElement('div');
+            wrapper.className = 'slide-wrapper';
+            
+            // 2. 애니메이션(줌/팬)이 들어갈 중간 래퍼 + 액자 디자인 적용
+            const content = document.createElement('div');
+            content.className = `slide-content ${appSettings.frameStyle}`;
+            const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+            content.classList.add(randomEffect);
+
+            // 3. 실제 이미지 태그
             const img = document.createElement('img');
             img.src = images[index];
-            img.className = 'slide';
+            img.className = 'slide-img';
             
-            const randomEffect = effects[Math.floor(Math.random() * effects.length)];
-            img.classList.add(randomEffect);
-            
-            container.appendChild(img);
+            content.appendChild(img);
+            wrapper.appendChild(content);
+            const container = document.getElementById('slideshow-container');
+            container.appendChild(wrapper);
 
-            requestAnimationFrame(() => {
-                setTimeout(() => { img.classList.add('active'); }, 20);
-            });
+            // 렌더링 큐 이후에 active 클래스 추가하여 페이드인 효과 발동
+            requestAnimationFrame(() => setTimeout(() => wrapper.classList.add('active'), 50));
 
-            const allSlides = container.querySelectorAll('.slide');
-            if (allSlides.length > 2) {
-                setTimeout(() => {
-                    if (allSlides[0] && container.contains(allSlides[0]) && allSlides[0] !== img) {
-                        container.removeChild(allSlides[0]);
-                    }
-                }, 2000);
+            // 이전 슬라이드 정리
+            const allWrappers = container.querySelectorAll('.slide-wrapper');
+            if (allWrappers.length > 2) {
+                setTimeout(() => { if (allWrappers[0]) container.removeChild(allWrappers[0]); }, 2000);
             }
-            
-            allSlides.forEach(slide => {
-                if (slide !== img) { slide.classList.remove('active'); }
-            });
+            allWrappers.forEach(w => { if (w !== wrapper) w.classList.remove('active'); });
         }
 
-        function nextSlide() {
-            if (images.length === 0) return;
-            currentIndex = (currentIndex + 1) % images.length;
-            showSlide(currentIndex);
-        }
-
-        function prevSlide() {
-            if (images.length === 0) return;
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
-            showSlide(currentIndex);
-            resetInterval();
-        }
-
+        function nextSlide() { if(images.length===0)return; currentIndex = (currentIndex + 1) % images.length; showSlide(currentIndex); }
+        function prevSlide() { if(images.length===0)return; currentIndex = (currentIndex - 1 + images.length) % images.length; showSlide(currentIndex); resetInterval(); }
         function togglePlayPause() {
             if (isPlaying) {
-                // 일시 정지 시 오디오도 같이 멈춤
-                clearInterval(slideIntervalId);
-                isPlaying = false;
+                clearInterval(slideIntervalId); isPlaying = false;
                 if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
                 document.getElementById('local-audio').pause();
             } else {
-                // 다시 재생 시 오디오도 다시 켬
-                nextSlide(); 
-                slideIntervalId = setInterval(nextSlide, slideDuration);
-                isPlaying = true;
+                nextSlide(); slideIntervalId = setInterval(nextSlide, slideDuration); isPlaying = true;
                 if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
                 if (document.getElementById('local-audio').src) document.getElementById('local-audio').play();
             }
             updatePlayPauseIcon();
         }
-
         function updatePlayPauseIcon() {
-            if (isPlaying) {
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                playPauseBtn.classList.replace('bg-green-600', 'bg-blue-600');
-                playPauseBtn.classList.replace('hover:bg-green-500', 'hover:bg-blue-500');
-            } else {
-                playPauseBtn.innerHTML = '<i class="fas fa-play ml-1"></i>'; 
-                playPauseBtn.classList.replace('bg-blue-600', 'bg-green-600');
-                playPauseBtn.classList.replace('hover:bg-blue-500', 'hover:bg-green-500');
-            }
+            const btn = document.getElementById('play-pause-btn');
+            btn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play ml-1"></i>';
         }
-
-        function resetInterval() {
-            if (isPlaying) {
-                clearInterval(slideIntervalId);
-                slideIntervalId = setInterval(nextSlide, slideDuration);
-            }
-        }
-
+        function resetInterval() { if (isPlaying) { clearInterval(slideIntervalId); slideIntervalId = setInterval(nextSlide, slideDuration); } }
         function stopSlideshow() {
-            clearInterval(slideIntervalId);
-            isPlaying = false;
-            
+            clearInterval(slideIntervalId); isPlaying = false;
             document.getElementById('local-audio').pause();
-            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-                ytPlayer.pauseVideo();
-            }
-            
-            container.classList.remove('cursor-none');
-            setupView.classList.remove('hidden');
-            slideshowView.classList.add('hidden');
+            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+            document.getElementById('slideshow-container').classList.remove('cursor-none');
+            document.getElementById('setup-view').classList.remove('hidden');
+            document.getElementById('slideshow-view').classList.add('hidden');
         }
-
         function showControlsTemporary() {
-            const controls = document.getElementById('slideshow-controls');
-            container.classList.remove('cursor-none');
-            controls.style.opacity = '1';
-
+            document.getElementById('slideshow-container').classList.remove('cursor-none');
+            document.getElementById('slideshow-controls').style.opacity = '1';
             clearTimeout(controlsTimeout);
-            controlsTimeout = setTimeout(() => {
-                if(isPlaying){
-                    container.classList.add('cursor-none');
-                    controls.style.opacity = '0';
-                }
-            }, 3000);
+            controlsTimeout = setTimeout(() => { if(isPlaying){ document.getElementById('slideshow-container').classList.add('cursor-none'); document.getElementById('slideshow-controls').style.opacity = '0'; } }, 3000);
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (slideshowView.classList.contains('hidden')) return;
-            showControlsTemporary(); 
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('slideshow-view').classList.contains('hidden')) return;
+            showControlsTemporary();
             if (e.key === 'ArrowRight') { nextSlide(); resetInterval(); } 
             else if (e.key === 'ArrowLeft') { prevSlide(); resetInterval(); } 
             else if (e.key === ' ') { e.preventDefault(); togglePlayPause(); } 
-            else if (e.key === 'Escape') { stopSlideshow(); }
+            else if (e.key === 'Escape') stopSlideshow();
         });
     </script>
 </body>
