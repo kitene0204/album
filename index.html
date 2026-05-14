@@ -12,15 +12,58 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
-        /* 웹폰트 적용 */
-        @import url('https://webfontworld.github.io/NanumSquareNeo/NanumSquareNeo.css');
-        body { font-family: 'NanumSquareNeo', sans-serif; }
+        /* ❗ 배달의 민족 폰트 적용 ❗ */
+        @font-face {
+            font-family: 'BMDOHYEON';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMDOHYEON.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'BMJUA';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body { font-family: 'BMDOHYEON', sans-serif; letter-spacing: 0.5px; }
+        
+        /* 슬라이드쇼 오버레이 타이틀은 감성적인 주아체로 */
+        #overlay-title-text { font-family: 'BMJUA', sans-serif; letter-spacing: 1px; }
+
+        /* 입력창이나 버튼 안의 작은 글씨들은 가독성을 위해 시스템 기본 폰트 유지 */
+        input, .text-sm, .text-xs { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
 
         /* 슬라이드쇼 부모 컨테이너 */
         #slideshow-container {
-            background-color: #111;
+            /* background-color: #111; 삭제: 투명하게 변경하여 파스텔 배경 노출 */
+            background-color: transparent;
             overflow: hidden;
             position: relative;
+            z-index: 10; /* 배경 장식보다 위에 오도록 설정 */
+        }
+
+        /* 🎨 파스텔 배경 및 둥둥 떠다니는 아이콘 애니메이션 */
+        .pastel-bg {
+            background: linear-gradient(-45deg, #fdfbfb, #f3e5f5, #e0f7fa, #fff3e0);
+            background-size: 400% 400%;
+            animation: pastelGradient 15s ease infinite;
+        }
+        @keyframes pastelGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .floating-icon {
+            position: absolute;
+            animation: floatIcon 6s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0% { transform: translateY(0px) rotate(0deg) scale(1); }
+            33% { transform: translateY(-20px) rotate(15deg) scale(1.1); }
+            66% { transform: translateY(15px) rotate(-10deg) scale(0.9); }
+            100% { transform: translateY(0px) rotate(0deg) scale(1); }
         }
 
         /* 📸 액자 디자인 CSS 📸 */
@@ -284,8 +327,26 @@
         </div>
     </div>
 
-    <div id="slideshow-view" class="hidden fixed inset-0 z-50 bg-[#111] flex flex-col w-full h-full">
-        <div id="slideshow-title-overlay" class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none opacity-0 transition-opacity duration-1000 bg-black/60">
+    <div id="slideshow-view" class="hidden fixed inset-0 z-50 pastel-bg flex flex-col w-full h-full">
+        
+        <!-- 🎨 파스텔 배경 장식 (아이콘들) -->
+        <div id="slideshow-decorations" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <!-- 왼쪽 장식 -->
+            <i class="floating-icon fas fa-school text-6xl text-blue-300/70" style="top: 15%; left: 8%; animation-delay: 0s;"></i>
+            <i class="floating-icon fas fa-futbol text-7xl text-slate-400/50" style="top: 45%; left: 5%; animation-delay: 1.2s;"></i>
+            <i class="floating-icon fas fa-hamburger text-6xl text-orange-300/70" style="top: 75%; left: 10%; animation-delay: 2.4s;"></i>
+            <i class="floating-icon fas fa-music text-5xl text-purple-300/70" style="top: 30%; left: 20%; animation-delay: 3.1s;"></i>
+            <i class="floating-icon fas fa-star text-6xl text-yellow-300/80" style="top: 85%; left: 18%; animation-delay: 0.8s;"></i>
+            
+            <!-- 오른쪽 장식 -->
+            <i class="floating-icon fas fa-palette text-7xl text-pink-300/70" style="top: 20%; right: 8%; animation-delay: 0.5s;"></i>
+            <i class="floating-icon fas fa-film text-6xl text-slate-400/50" style="top: 55%; right: 5%; animation-delay: 2.1s;"></i>
+            <i class="floating-icon fas fa-camera-retro text-7xl text-teal-300/70" style="top: 80%; right: 10%; animation-delay: 1.7s;"></i>
+            <i class="floating-icon fas fa-heart text-5xl text-red-300/70" style="top: 35%; right: 20%; animation-delay: 3.5s;"></i>
+            <i class="floating-icon fas fa-book text-6xl text-indigo-300/70" style="top: 10%; right: 18%; animation-delay: 2.8s;"></i>
+        </div>
+
+        <div id="slideshow-title-overlay" class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none opacity-0 transition-opacity duration-1000 bg-black/40">
             <h1 id="overlay-title-text" class="text-4xl md:text-7xl text-white font-bold text-center drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] px-8"></h1>
         </div>
 
