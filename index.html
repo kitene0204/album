@@ -36,11 +36,10 @@
 
         /* 슬라이드쇼 부모 컨테이너 */
         #slideshow-container {
-            /* background-color: #111; 삭제: 투명하게 변경하여 파스텔 배경 노출 */
             background-color: transparent;
             overflow: hidden;
             position: relative;
-            z-index: 10; /* 배경 장식보다 위에 오도록 설정 */
+            z-index: 10;
         }
 
         /* 🎨 파스텔 배경 및 둥둥 떠다니는 아이콘 애니메이션 */
@@ -72,14 +71,13 @@
             inset: 0;
             display: flex;
             align-items: center;
-            justify-content: center; /* 오타 수정: 가운데 정렬 완벽 적용 */
+            justify-content: center;
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
             padding: 20px;
         }
         .slide-wrapper.active { opacity: 1; }
 
-        /* 슬라이드 내부 컨테이너 (움직임 효과 적용 대상) */
         .slide-content {
             display: flex;
             align-items: center;
@@ -90,7 +88,7 @@
             will-change: transform;
         }
 
-        /* 이미지 기본 */
+        /* 이미지/동영상 기본 */
         .slide-img {
             max-width: 100%;
             max-height: 100%;
@@ -189,7 +187,7 @@
                 <section>
                     <div class="flex items-center mb-4">
                         <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">1</div>
-                        <h2 class="text-xl font-bold text-slate-700">사진 불러오기</h2>
+                        <h2 class="text-xl font-bold text-slate-700">사진/동영상 불러오기</h2>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -198,22 +196,24 @@
                                 <i class="fas fa-folder-open text-2xl text-yellow-500"></i>
                             </div>
                             <h3 class="font-bold text-slate-700 mt-3 text-lg">폴더 단위로 추가</h3>
-                            <input type="file" id="folder-upload" webkitdirectory directory multiple class="hidden" accept="image/*" onchange="handleFiles(this.files)">
+                            <!-- ❗ accept 속성에 video/* 추가됨 ❗ -->
+                            <input type="file" id="folder-upload" webkitdirectory directory multiple class="hidden" accept="image/*,video/*" onchange="handleFiles(this.files)">
                         </div>
                         
                         <div class="group border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:bg-green-50 hover:border-green-400 transition-all cursor-pointer shadow-sm" onclick="document.getElementById('file-upload').click()">
                             <div class="w-14 h-14 mx-auto bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <i class="fas fa-images text-2xl text-green-500"></i>
                             </div>
-                            <h3 class="font-bold text-slate-700 mt-3 text-lg">사진 파일로 추가</h3>
-                            <input type="file" id="file-upload" multiple class="hidden" accept="image/*" onchange="handleFiles(this.files)">
+                            <h3 class="font-bold text-slate-700 mt-3 text-lg">파일로 추가</h3>
+                            <!-- ❗ accept 속성에 video/* 추가됨 ❗ -->
+                            <input type="file" id="file-upload" multiple class="hidden" accept="image/*,video/*" onchange="handleFiles(this.files)">
                         </div>
                     </div>
 
                     <div class="mt-4 flex items-center justify-between bg-slate-100 py-3 px-5 rounded-xl border border-slate-200">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle text-slate-400 mr-2" id="status-icon"></i>
-                            <span class="text-slate-600">준비된 사진: <strong id="photo-count" class="text-blue-600 text-xl mx-1">0</strong> 장</span>
+                            <span class="text-slate-600">준비된 파일: <strong id="photo-count" class="text-blue-600 text-xl mx-1">0</strong> 개</span>
                         </div>
                         <button onclick="clearPhotos()" class="text-sm font-medium text-red-500 hover:bg-red-100 px-3 py-1 rounded transition hidden" id="clear-photos-btn">
                             <i class="fas fa-trash-alt mr-1"></i>비우기
@@ -230,12 +230,12 @@
                             <h2 class="text-xl font-bold text-slate-700">재생 시간</h2>
                         </div>
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col justify-center">
-                            <label for="duration-val" class="block text-slate-600 mb-3 font-medium">사진 한 장당 머무는 시간</label>
+                            <label for="duration-val" class="block text-slate-600 mb-3 font-medium text-sm">사진/영상 한 장당 머무는 시간</label>
                             <div class="flex items-center">
                                 <input type="range" id="duration-slider" min="0.5" max="15" step="0.5" value="4" class="w-full mr-4 accent-blue-600" oninput="document.getElementById('duration-val').value = this.value">
                                 <div class="bg-white border border-slate-200 rounded-lg px-2 py-1 flex items-center shadow-inner">
                                     <input type="number" id="duration-val" value="4" min="0.1" max="60" step="0.1" class="font-bold text-blue-600 w-16 text-center focus:outline-none bg-transparent" oninput="document.getElementById('duration-slider').value = this.value">
-                                    <span class="text-slate-500 font-bold pr-2">초</span>
+                                    <span class="text-slate-500 font-bold pr-2 text-sm">초</span>
                                 </div>
                             </div>
                         </div>
@@ -282,47 +282,47 @@
             </div>
             <div class="p-8 space-y-6">
                 <div>
-                    <label class="block text-slate-700 font-bold mb-2">슬라이드쇼 제목</label>
+                    <label class="block text-slate-700 font-bold mb-2 text-sm">슬라이드쇼 제목</label>
                     <input type="text" id="setting-title" value="우리반 추억 사진관" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
                     <p class="text-xs text-slate-400 mt-1">이 제목은 메인 화면과 슬라이드쇼 시작 화면에 나타납니다.</p>
                 </div>
                 
                 <div>
-                    <label class="block text-slate-700 font-bold mb-3">사진 액자(프레임) 디자인</label>
+                    <label class="block text-slate-700 font-bold mb-3 text-sm">액자(프레임) 디자인</label>
                     <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-none" class="peer hidden" checked>
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-image text-2xl text-slate-400 mb-2"></i>
-                                <div class="font-bold text-slate-700">기본 (없음)</div>
+                                <div class="font-bold text-slate-700 text-sm">기본 (없음)</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-polaroid" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-sticky-note text-2xl text-slate-400 mb-2"></i>
-                                <div class="font-bold text-slate-700">폴라로이드</div>
+                                <div class="font-bold text-slate-700 text-sm">폴라로이드</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-wood" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-border-all text-2xl text-slate-400 mb-2"></i>
-                                <div class="font-bold text-slate-700">원목 액자</div>
+                                <div class="font-bold text-slate-700 text-sm">원목 액자</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-film" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-film text-2xl text-slate-400 mb-2"></i>
-                                <div class="font-bold text-slate-700">영화 필름</div>
+                                <div class="font-bold text-slate-700 text-sm">영화 필름</div>
                             </div>
                         </label>
                     </div>
                 </div>
             </div>
             <div class="p-6 bg-slate-50 border-t border-slate-100 text-right">
-                <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition">저장하기</button>
+                <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition text-sm">저장하기</button>
             </div>
         </div>
     </div>
@@ -331,14 +331,12 @@
         
         <!-- 🎨 파스텔 배경 장식 (아이콘들) -->
         <div id="slideshow-decorations" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-            <!-- 왼쪽 장식 -->
             <i class="floating-icon fas fa-school text-6xl text-blue-300/70" style="top: 15%; left: 8%; animation-delay: 0s;"></i>
             <i class="floating-icon fas fa-futbol text-7xl text-slate-400/50" style="top: 45%; left: 5%; animation-delay: 1.2s;"></i>
             <i class="floating-icon fas fa-hamburger text-6xl text-orange-300/70" style="top: 75%; left: 10%; animation-delay: 2.4s;"></i>
             <i class="floating-icon fas fa-music text-5xl text-purple-300/70" style="top: 30%; left: 20%; animation-delay: 3.1s;"></i>
             <i class="floating-icon fas fa-star text-6xl text-yellow-300/80" style="top: 85%; left: 18%; animation-delay: 0.8s;"></i>
             
-            <!-- 오른쪽 장식 -->
             <i class="floating-icon fas fa-palette text-7xl text-pink-300/70" style="top: 20%; right: 8%; animation-delay: 0.5s;"></i>
             <i class="floating-icon fas fa-film text-6xl text-slate-400/50" style="top: 55%; right: 5%; animation-delay: 2.1s;"></i>
             <i class="floating-icon fas fa-camera-retro text-7xl text-teal-300/70" style="top: 80%; right: 10%; animation-delay: 1.7s;"></i>
@@ -377,78 +375,47 @@
         /* =========================================
            ❗ Firebase & 데이터 저장 로직 ❗
         ========================================= */
-        
-        // 선생님의 Firebase 프로젝트 설정값을 여기에 넣으시면 기기가 바뀌어도 동기화됩니다.
-        // (입력하지 않아도 현재 컴퓨터의 로컬스토리지에 안전하게 자동 저장됩니다!)
-        const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            // projectId: "YOUR_PROJECT_ID"
-        };
-
+        const firebaseConfig = {};
         let db = null;
         try {
             if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey) {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
-                console.log("Firebase 연동 성공!");
             }
-        } catch(e) { console.warn("Firebase 설정 없음. 로컬 저장소를 사용합니다."); }
+        } catch(e) {}
 
-        // 전역 설정 변수
-        let appSettings = {
-            title: "우리반 추억 사진관",
-            frameStyle: "frame-none"
-        };
+        let appSettings = { title: "우리반 추억 사진관", frameStyle: "frame-none" };
 
-        // 설정 불러오기 (앱 시작 시 실행)
         async function loadSettings() {
-            // 1. 로컬 스토리지 확인 (빠른 로딩)
             const localSet = localStorage.getItem('classPhotoSettings');
             if (localSet) appSettings = JSON.parse(localSet);
-
-            // 2. Firebase 확인 (우선 적용)
             if (db) {
                 try {
                     const doc = await db.collection("settings").doc("mainConfig").get();
                     if (doc.exists) appSettings = doc.data();
-                } catch(e) { console.error("Firebase 불러오기 실패", e); }
+                } catch(e) {}
             }
-            
-            // 화면 UI 업데이트
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
             document.getElementById('setting-title').value = appSettings.title;
             document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
         }
 
-        // 설정 저장하기
         async function saveSettings() {
             appSettings.title = document.getElementById('setting-title').value.trim() || "우리반 추억 사진관";
             appSettings.frameStyle = document.querySelector('input[name="frame-style"]:checked').value;
-
-            // 화면 즉시 적용
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
-            
-            // 1. 로컬 저장 (안전장치)
             localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings));
-
-            // 2. Firebase 저장
             if (db) {
-                try {
-                    await db.collection("settings").doc("mainConfig").set(appSettings);
-                } catch(e) { console.error("Firebase 저장 실패", e); }
+                try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch(e) {}
             }
-
             closeSettingsModal();
             showToast("디자인 설정이 저장되었습니다!", "success");
         }
 
-        // 설정 모달 열고 닫기
         function openSettingsModal() {
             const modal = document.getElementById('settings-modal');
             const content = document.getElementById('settings-modal-content');
             modal.classList.remove('hidden');
-            // 부드러운 애니메이션
             requestAnimationFrame(() => {
                 modal.classList.remove('opacity-0');
                 content.classList.remove('scale-95');
@@ -462,11 +429,10 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // 페이지 로드 시 설정 불러오기 실행
         window.addEventListener('DOMContentLoaded', loadSettings);
 
         /* =========================================
-           유튜브 및 슬라이드쇼 기존 로직 (수정본)
+           유튜브 및 슬라이드쇼 기존 로직 (동영상 지원)
         ========================================= */
         let ytPlayer = null; let isYtReady = false;
         var tag = document.createElement('script');
@@ -479,28 +445,38 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const isError = type === 'error';
-            toast.className = `px-5 py-3 rounded-2xl text-white font-bold shadow-lg transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-3 w-full backdrop-blur-md ${isError ? 'bg-red-500/90' : 'bg-green-500/90'}`;
+            toast.className = `px-5 py-3 rounded-2xl text-white font-bold shadow-lg transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-3 w-full backdrop-blur-md ${isError ? 'bg-red-500/90' : 'bg-green-500/90'} text-sm`;
             toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} text-xl"></i> <span class="leading-tight">${message}</span>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'));
             setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-20px]'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        let images = []; let currentIndex = 0; let slideIntervalId = null; let isPlaying = false; let slideDuration = 4000; let controlsTimeout = null;
+        // ❗ 이미지와 동영상 모두 담는 배열로 변경 ❗
+        let mediaItems = []; 
+        let currentIndex = 0; let slideIntervalId = null; let isPlaying = false; let slideDuration = 4000; let controlsTimeout = null;
         const effects = ['effect-fade', 'effect-zoom', 'effect-pan-right', 'effect-pan-left'];
 
         function handleFiles(files) {
             if (!files || files.length === 0) return;
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) images.push(URL.createObjectURL(files[i]));
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    mediaItems.push({ type: 'image', url: URL.createObjectURL(file) });
+                } else if (file.type.startsWith('video/')) {
+                    mediaItems.push({ type: 'video', url: URL.createObjectURL(file) });
+                }
             }
-            document.getElementById('photo-count').innerText = images.length;
+            document.getElementById('photo-count').innerText = mediaItems.length;
             document.getElementById('clear-photos-btn').classList.remove('hidden');
         }
+
         function clearPhotos() {
-            images = []; document.getElementById('photo-count').innerText = 0;
+            mediaItems.forEach(item => URL.revokeObjectURL(item.url)); 
+            mediaItems = []; 
+            document.getElementById('photo-count').innerText = 0;
             document.getElementById('clear-photos-btn').classList.add('hidden');
-            showToast('사진이 비워졌습니다.', 'success');
+            showToast('파일이 모두 비워졌습니다.', 'success');
         }
 
         function getYouTubeId(url) {
@@ -546,7 +522,7 @@
         }
 
         function startSlideshow() {
-            if (images.length === 0) { showToast("사진을 먼저 추가해주세요."); return; }
+            if (mediaItems.length === 0) { showToast("사진이나 동영상을 먼저 추가해주세요."); return; }
             slideDuration = (parseFloat(document.getElementById('duration-val').value) || 4) * 1000;
             
             document.getElementById('setup-view').classList.add('hidden');
@@ -554,7 +530,6 @@
             showControlsTemporary();
             setupAudio();
             
-            // 타이틀 오버레이 표시
             const overlay = document.getElementById('slideshow-title-overlay');
             document.getElementById('overlay-title-text').innerText = appSettings.title;
             overlay.classList.remove('opacity-0');
@@ -566,32 +541,42 @@
             updatePlayPauseIcon();
         }
 
-        /* ❗ 액자가 적용된 슬라이드 생성 로직 ❗ */
+        /* ❗ 동영상 렌더링 지원 로직 ❗ */
         function showSlide(index) {
-            // 1. 투명도를 조절할 최상위 래퍼
             const wrapper = document.createElement('div');
             wrapper.className = 'slide-wrapper';
             
-            // 2. 애니메이션(줌/팬)이 들어갈 중간 래퍼 + 액자 디자인 적용
             const content = document.createElement('div');
             content.className = `slide-content ${appSettings.frameStyle}`;
             const randomEffect = effects[Math.floor(Math.random() * effects.length)];
             content.classList.add(randomEffect);
 
-            // 3. 실제 이미지 태그
-            const img = document.createElement('img');
-            img.src = images[index];
-            img.className = 'slide-img';
+            const currentItem = mediaItems[index];
+            let mediaEl;
+
+            // 동영상일 경우
+            if (currentItem.type === 'video') {
+                mediaEl = document.createElement('video');
+                mediaEl.src = currentItem.url;
+                mediaEl.autoplay = true;
+                mediaEl.muted = true; // BGM과 겹치지 않게 음소거
+                mediaEl.loop = true;
+                mediaEl.playsInline = true;
+            } 
+            // 사진일 경우
+            else {
+                mediaEl = document.createElement('img');
+                mediaEl.src = currentItem.url;
+            }
             
-            content.appendChild(img);
+            mediaEl.className = 'slide-img';
+            content.appendChild(mediaEl);
             wrapper.appendChild(content);
             const container = document.getElementById('slideshow-container');
             container.appendChild(wrapper);
 
-            // 렌더링 큐 이후에 active 클래스 추가하여 페이드인 효과 발동
             requestAnimationFrame(() => setTimeout(() => wrapper.classList.add('active'), 50));
 
-            // 이전 슬라이드 정리
             const allWrappers = container.querySelectorAll('.slide-wrapper');
             if (allWrappers.length > 2) {
                 setTimeout(() => { if (allWrappers[0]) container.removeChild(allWrappers[0]); }, 2000);
@@ -599,8 +584,9 @@
             allWrappers.forEach(w => { if (w !== wrapper) w.classList.remove('active'); });
         }
 
-        function nextSlide() { if(images.length===0)return; currentIndex = (currentIndex + 1) % images.length; showSlide(currentIndex); }
-        function prevSlide() { if(images.length===0)return; currentIndex = (currentIndex - 1 + images.length) % images.length; showSlide(currentIndex); resetInterval(); }
+        function nextSlide() { if(mediaItems.length===0)return; currentIndex = (currentIndex + 1) % mediaItems.length; showSlide(currentIndex); }
+        function prevSlide() { if(mediaItems.length===0)return; currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length; showSlide(currentIndex); resetInterval(); }
+        
         function togglePlayPause() {
             if (isPlaying) {
                 clearInterval(slideIntervalId); isPlaying = false;
@@ -618,6 +604,7 @@
             btn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play ml-1"></i>';
         }
         function resetInterval() { if (isPlaying) { clearInterval(slideIntervalId); slideIntervalId = setInterval(nextSlide, slideDuration); } }
+        
         function stopSlideshow() {
             clearInterval(slideIntervalId); isPlaying = false;
             document.getElementById('local-audio').pause();
@@ -626,12 +613,14 @@
             document.getElementById('setup-view').classList.remove('hidden');
             document.getElementById('slideshow-view').classList.add('hidden');
         }
+        
         function showControlsTemporary() {
             document.getElementById('slideshow-container').classList.remove('cursor-none');
             document.getElementById('slideshow-controls').style.opacity = '1';
             clearTimeout(controlsTimeout);
             controlsTimeout = setTimeout(() => { if(isPlaying){ document.getElementById('slideshow-container').classList.add('cursor-none'); document.getElementById('slideshow-controls').style.opacity = '0'; } }, 3000);
         }
+        
         document.addEventListener('keydown', e => {
             if (document.getElementById('slideshow-view').classList.contains('hidden')) return;
             showControlsTemporary();
