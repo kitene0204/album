@@ -588,7 +588,9 @@
 
         /* ---------- 유튜브 검색 (오른쪽 창, YouTube Data API 키 필요) ---------- */
         // 키는 이 브라우저에만 저장. 같은 주소(github.io)의 청소시간 사이트와 같은 저장소를 써서 키를 같이 씀
-        let ytApiKey = '';
+        // 사이트에 박아 둔 기본 검색 키 (어느 컴퓨터에서 열어도 바로 검색되게). 구글 콘솔에서 kitene0204.github.io + YouTube Data API로 제한해 둔 키
+        const BUILTIN_YT_KEY = 'AIzaSyCaRwlg0B3popn2FXLP3WPxQijw5HleenY';
+        let ytApiKey = BUILTIN_YT_KEY;
         let ytSearch = { query: '', loading: false, error: '', results: [] };
 
         function showYtKeyBox(on) {
@@ -609,7 +611,7 @@
         }
         window.addEventListener('DOMContentLoaded', () => {
             try {
-                localforage.getItem('ytApiKey').then(v => { if (v) ytApiKey = v; showYtKeyBox(false); }).catch(() => showYtKeyBox(false));
+                localforage.getItem('ytApiKey').then(v => { ytApiKey = v || BUILTIN_YT_KEY; showYtKeyBox(false); }).catch(() => showYtKeyBox(false));
             } catch (e) { showYtKeyBox(false); }
         });
 
