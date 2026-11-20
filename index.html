@@ -163,6 +163,11 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* 재생 중 설정 패널 안에서는 한 줄로 */
+        #slide-panel .options-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 1.5rem; }
+        .options-grid > section, .options-grid input[type="range"] { min-width: 0; }
+        #slide-panel .step-badge { display: none; }
+        #slide-settings-btn { opacity: 0; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-blue-200">
@@ -223,45 +228,63 @@
 
                 <hr class="border-slate-100">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div id="play-options-home">
+                <div id="play-options" class="options-grid grid grid-cols-1 md:grid-cols-2 gap-8">
                     <section class="flex flex-col">
                         <div class="flex items-center mb-4">
-                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">2</div>
+                            <div class="step-badge bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">2</div>
                             <h2 class="text-xl font-bold text-slate-700">재생 시간</h2>
                         </div>
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col justify-center">
-                            <label for="duration-val" class="block text-slate-600 mb-3 font-medium text-sm">사진/영상 한 장당 머무는 시간</label>
-                            <div class="flex items-center">
-                                <input type="range" id="duration-slider" min="0.5" max="15" step="0.5" value="4" class="w-full mr-4 accent-blue-600" oninput="document.getElementById('duration-val').value = this.value">
-                                <div class="bg-white border border-slate-200 rounded-lg px-2 py-1 flex items-center shadow-inner">
-                                    <input type="number" id="duration-val" value="4" min="0.1" max="60" step="0.1" class="font-bold text-blue-600 w-16 text-center focus:outline-none bg-transparent" oninput="document.getElementById('duration-slider').value = this.value">
-                                    <span class="text-slate-500 font-bold pr-2 text-sm">초</span>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col justify-center gap-5">
+                            <div>
+                                <label class="block text-slate-600 mb-2 font-medium text-sm"><i class="fas fa-image text-blue-500 mr-1"></i> 사진 한 장당 머무는 시간</label>
+                                <div class="flex items-center">
+                                    <input type="range" id="photo-duration-slider" min="0.5" max="15" step="0.5" value="4" class="w-full mr-4 accent-blue-600" oninput="onDurationInput('photo', this)">
+                                    <div class="bg-white border border-slate-200 rounded-lg px-2 py-1 flex items-center shadow-inner">
+                                        <input type="number" id="photo-duration-val" value="4" min="0.5" max="60" step="0.5" class="font-bold text-blue-600 w-16 text-center focus:outline-none bg-transparent" oninput="onDurationInput('photo', this)">
+                                        <span class="text-slate-500 font-bold pr-2 text-sm">초</span>
+                                    </div>
                                 </div>
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-2 font-medium text-sm"><i class="fas fa-video text-rose-500 mr-1"></i> 영상 한 개당 머무는 시간</label>
+                                <div id="video-duration-row" class="flex items-center">
+                                    <input type="range" id="video-duration-slider" min="1" max="60" step="1" value="10" class="w-full mr-4 accent-rose-500" oninput="onDurationInput('video', this)">
+                                    <div class="bg-white border border-slate-200 rounded-lg px-2 py-1 flex items-center shadow-inner">
+                                        <input type="number" id="video-duration-val" value="10" min="1" max="600" step="1" class="font-bold text-rose-500 w-16 text-center focus:outline-none bg-transparent" oninput="onDurationInput('video', this)">
+                                        <span class="text-slate-500 font-bold pr-2 text-sm">초</span>
+                                    </div>
+                                </div>
+                                <label class="flex items-center mt-3 text-sm text-slate-600 cursor-pointer select-none">
+                                    <input type="checkbox" id="video-to-end" class="mr-2 w-4 h-4 accent-rose-500" onchange="setVideoToEnd(this.checked)"> 영상은 끝까지 재생하기
+                                </label>
                             </div>
                         </div>
                     </section>
 
                     <section id="music-section" class="flex flex-col transition-all duration-500 rounded-2xl">
                         <div class="flex items-center mb-4">
-                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">3</div>
-                            <h2 class="text-xl font-bold text-slate-700">배경 음악 (선택)</h2>
+                            <div class="step-badge bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shadow-sm">3</div>
+                            <h2 class="text-xl font-bold text-slate-700">배경 음악 <span class="text-sm text-slate-400 font-normal">(여러 곡 가능)</span></h2>
                         </div>
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col justify-center">
-                            <div class="flex flex-col gap-2 relative z-10">
-                                <div class="relative w-full">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fab fa-youtube text-red-500"></i></div>
-                                    <input type="text" id="youtube-link" placeholder="유튜브 링크 붙여넣기 또는 검색어 입력" class="w-full pl-10 pr-20 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-sm">
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="applyYoutubeLink()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl text-sm font-bold border border-blue-200"><i class="fas fa-check mr-1"></i> 적용</button>
-                                    <button onclick="searchYoutube()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-medium border border-slate-200"><i class="fas fa-search mr-1"></i> 검색</button>
-                                </div>
-                                <div class="relative mt-2">
-                                    <input type="file" id="audio-upload" accept="audio/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 border border-slate-200 rounded-xl bg-white cursor-pointer shadow-sm">
-                                </div>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex-1 flex flex-col gap-2">
+                            <div class="relative w-full">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fab fa-youtube text-red-500"></i></div>
+                                <input type="text" id="youtube-link" placeholder="유튜브 링크(여러 개 가능) 또는 검색어" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-sm" onkeydown="if(event.key==='Enter'){event.preventDefault();addYoutubeFromInput();}">
                             </div>
+                            <div class="flex gap-2">
+                                <button onclick="addYoutubeFromInput()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl text-sm font-bold border border-blue-200"><i class="fas fa-plus mr-1"></i> 목록에 추가</button>
+                                <button onclick="searchYoutube()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-medium border border-slate-200"><i class="fas fa-search mr-1"></i> 유튜브 검색</button>
+                            </div>
+                            <label class="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 rounded-xl text-sm font-semibold border border-indigo-200 cursor-pointer">
+                                <i class="fas fa-file-audio"></i> 내 음악 파일 추가
+                                <input type="file" id="audio-upload" accept="audio/*" multiple class="hidden" onchange="addAudioFiles(this.files); this.value='';">
+                            </label>
+                            <div id="music-list" class="mt-1 max-h-56 overflow-y-auto space-y-1"></div>
+                            <p class="text-xs text-slate-400">곡이 끝나면 다음 곡으로 넘어가고, 마지막 곡 다음엔 처음부터 다시 재생돼요. 곡 이름을 누르면 바로 그 곡을 틀어요.</p>
                         </div>
                     </section>
+                </div>
                 </div>
 
                 <div class="pt-4 pb-2 text-center">
@@ -327,7 +350,7 @@
         </div>
     </div>
 
-    <div id="slideshow-view" class="hidden fixed inset-0 z-50 pastel-bg flex flex-col w-full h-full">
+    <div id="slideshow-view" class="hidden fixed inset-0 z-50 pastel-bg flex flex-col w-full h-full" onmousemove="showControlsTemporary()">
         
         <!-- 🎨 파스텔 배경 장식 (아이콘들) -->
         <div id="slideshow-decorations" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -348,11 +371,21 @@
             <h1 id="overlay-title-text" class="text-4xl md:text-7xl text-white font-bold text-center drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] px-8"></h1>
         </div>
 
-        <div id="slideshow-container" class="flex-1 w-full h-full relative cursor-none" onmousemove="showControlsTemporary()"></div>
+        <div id="slideshow-container" class="flex-1 w-full h-full relative cursor-none"></div>
 
         <div id="youtube-player-container" style="position: absolute; top: -9999px; left: -9999px; width: 300px; height: 300px; opacity: 0.01; pointer-events: none; z-index: -1;">
             <div id="youtube-player"></div>
         </div>
+
+        <button id="slide-settings-btn" onclick="toggleSlidePanel()" title="재생 설정 (음악·시간)" class="absolute top-4 right-4 z-[60] w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white text-xl backdrop-blur-md transition-opacity duration-300"><i class="fas fa-cog"></i></button>
+
+        <aside id="slide-panel" class="hidden absolute top-0 right-0 h-full w-full sm:w-[440px] z-[70] bg-white/95 backdrop-blur-md shadow-2xl overflow-y-auto p-5 text-slate-800">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-bold text-slate-700"><i class="fas fa-sliders-h mr-2 text-blue-500"></i>재생 설정</h2>
+                <button onclick="toggleSlidePanel(false)" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="play-options-panel"></div>
+        </aside>
 
         <div id="slideshow-controls" class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-8 flex justify-between items-center text-white pb-6 z-50">
             <button onclick="stopSlideshow()" class="text-white hover:text-red-400 bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md transition flex items-center text-sm font-medium">
@@ -369,7 +402,7 @@
             </div>
         </div>
     </div>
-    <audio id="local-audio" loop></audio>
+    <audio id="local-audio"></audio>
 
     <script>
         /* =========================================
@@ -432,60 +465,99 @@
         window.addEventListener('DOMContentLoaded', loadSettings);
 
         /* =========================================
-           유튜브 및 슬라이드쇼 기존 로직 (동영상 지원)
+           재생 옵션 (사진/영상 시간) 저장
         ========================================= */
-        let ytPlayer = null; let isYtReady = false;
+        let playback = { photoDuration: 4, videoDuration: 10, videoToEnd: false };
+        let musicList = [];   // [{ type: 'yt', id, title } | { type: 'file', url, title }]
+        let musicIndex = 0;
+
+        function loadPlayback() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('classPhotoPlayback') || 'null');
+                if (saved) {
+                    if (saved.photoDuration > 0) playback.photoDuration = saved.photoDuration;
+                    if (saved.videoDuration > 0) playback.videoDuration = saved.videoDuration;
+                    playback.videoToEnd = !!saved.videoToEnd;
+                    if (Array.isArray(saved.ytList)) musicList = saved.ytList.filter(t => t && t.id).map(t => ({ type: 'yt', id: t.id, title: t.title || t.id }));
+                }
+            } catch (e) {}
+            ['photo', 'video'].forEach(k => {
+                document.getElementById(k + '-duration-slider').value = playback[k + 'Duration'];
+                document.getElementById(k + '-duration-val').value = playback[k + 'Duration'];
+            });
+            document.getElementById('video-to-end').checked = playback.videoToEnd;
+            updateVideoRow();
+            renderMusicList();
+            musicList.forEach(t => { if (t.title === t.id) fetchTitle(t.id); });
+        }
+        function savePlayback() {
+            try {
+                localStorage.setItem('classPhotoPlayback', JSON.stringify({
+                    photoDuration: playback.photoDuration, videoDuration: playback.videoDuration, videoToEnd: playback.videoToEnd,
+                    ytList: musicList.filter(t => t.type === 'yt').map(t => ({ id: t.id, title: t.title }))
+                }));
+            } catch (e) {}
+        }
+
+        function onDurationInput(kind, el) {
+            const v = parseFloat(el.value);
+            if (!(v > 0)) return;
+            const otherId = kind + '-duration-' + (el.type === 'range' ? 'val' : 'slider');
+            document.getElementById(otherId).value = v;
+            playback[kind + 'Duration'] = v;
+            savePlayback();
+            if (isPlaying && mediaItems[currentIndex] && (mediaItems[currentIndex].type === 'video') === (kind === 'video')) scheduleNext();
+        }
+        function setVideoToEnd(on) {
+            playback.videoToEnd = on;
+            updateVideoRow();
+            savePlayback();
+            if (isPlaying && mediaItems[currentIndex] && mediaItems[currentIndex].type === 'video') scheduleNext();
+        }
+        function updateVideoRow() {
+            document.getElementById('video-duration-row').classList.toggle('opacity-40', playback.videoToEnd);
+            document.getElementById('video-duration-row').classList.toggle('pointer-events-none', playback.videoToEnd);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadPlayback);
+
+        /* =========================================
+           배경 음악 재생목록 (유튜브 + 내 파일)
+        ========================================= */
+        let ytPlayer = null; let isYtReady = false; let ytPlayerReady = false; let ytErrorCount = 0;
+        let musicActive = false; // 슬라이드쇼가 재생 중이라 음악이 나와야 하는 상태
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        window.onYouTubeIframeAPIReady = function() { isYtReady = true; };
+        window.onYouTubeIframeAPIReady = function() {
+            isYtReady = true;
+            const t = musicList[musicIndex];
+            if (musicActive && t && t.type === 'yt') playYt(t.id);
+        };
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const isError = type === 'error';
             toast.className = `px-5 py-3 rounded-2xl text-white font-bold shadow-lg transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-3 w-full backdrop-blur-md ${isError ? 'bg-red-500/90' : 'bg-green-500/90'} text-sm`;
-            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} text-xl"></i> <span class="leading-tight">${message}</span>`;
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} text-xl"></i> <span class="leading-tight"></span>`;
+            toast.querySelector('span').textContent = message;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'));
             setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-20px]'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // ❗ 이미지와 동영상 모두 담는 배열로 변경 ❗
-        let mediaItems = []; 
-        let currentIndex = 0; let slideIntervalId = null; let isPlaying = false; let slideDuration = 4000; let controlsTimeout = null;
-        const effects = ['effect-fade', 'effect-zoom', 'effect-pan-right', 'effect-pan-left'];
-
-        function handleFiles(files) {
-            if (!files || files.length === 0) return;
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.type.startsWith('image/')) {
-                    mediaItems.push({ type: 'image', url: URL.createObjectURL(file) });
-                } else if (file.type.startsWith('video/')) {
-                    mediaItems.push({ type: 'video', url: URL.createObjectURL(file) });
-                }
-            }
-            document.getElementById('photo-count').innerText = mediaItems.length;
-            document.getElementById('clear-photos-btn').classList.remove('hidden');
+        function extractAllYouTubeIds(text) {
+            const re = /(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/|\/v\/)([A-Za-z0-9_-]{11})/g;
+            const ids = []; let m;
+            while ((m = re.exec(text)) !== null) ids.push(m[1]);
+            return ids;
         }
 
-        function clearPhotos() {
-            mediaItems.forEach(item => URL.revokeObjectURL(item.url)); 
-            mediaItems = []; 
-            document.getElementById('photo-count').innerText = 0;
-            document.getElementById('clear-photos-btn').classList.add('hidden');
-            showToast('파일이 모두 비워졌습니다.', 'success');
-        }
-
-        function getYouTubeId(url) {
-            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
         function searchYoutube() {
             const typed = document.getElementById('youtube-link').value.trim();
-            let keyword = (typed && !getYouTubeId(typed)) ? typed : '';
+            let keyword = (typed && extractAllYouTubeIds(typed).length === 0) ? typed : '';
             if (!keyword) {
                 keyword = prompt('어떤 BGM을 찾을까요? (예: 신나는 bgm, 졸업식 bgm, 잔잔한 피아노)', '');
                 if (keyword === null) return;
@@ -493,151 +565,351 @@
                 if (!keyword) { showToast('검색어를 입력해주세요.'); return; }
             }
             window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(keyword), '_blank');
-        }
-        function applyYoutubeLink() {
-            const url = document.getElementById('youtube-link').value.trim();
-            if (getYouTubeId(url)) showToast("유튜브 링크가 적용되었습니다.", "success");
-            else showToast("올바른 유튜브 링크를 넣어주세요.");
+            showToast('마음에 드는 영상 주소를 복사해서 입력칸에 붙여넣고 "목록에 추가"를 누르세요.', 'success');
         }
 
-        function setupAudio() {
-            const localFile = document.getElementById('audio-upload').files[0];
-            const ytLink = document.getElementById('youtube-link').value.trim();
-            const localAudio = document.getElementById('local-audio');
-            const vol = document.getElementById('volume-slider').value;
-            
-            localAudio.pause(); localAudio.src = '';
-            if (localFile) {
-                if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-                localAudio.src = URL.createObjectURL(localFile); localAudio.volume = vol/100; localAudio.play();
-            } else if (ytLink) {
-                const vid = getYouTubeId(ytLink);
-                if (vid && isYtReady) {
-                    if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                        ytPlayer.loadVideoById(vid); ytPlayer.setVolume(vol);
-                    } else {
-                        ytPlayer = new YT.Player('youtube-player', {
-                            height: '300', width: '300', videoId: vid,
-                            playerVars: { 'autoplay': 1, 'controls': 0, 'loop': 1, 'playlist': vid, 'origin': window.location.origin },
-                            events: { 'onReady': e => { e.target.setVolume(vol); e.target.playVideo(); }, 'onStateChange': e => { if(e.data===0) e.target.playVideo(); } }
-                        });
+        function addYoutubeFromInput() {
+            const input = document.getElementById('youtube-link');
+            const text = input.value.trim();
+            if (!text) { showToast('유튜브 링크를 붙여넣어 주세요.'); return; }
+            const ids = extractAllYouTubeIds(text);
+            if (ids.length === 0) { searchYoutube(); return; } // 링크가 아니면 검색어로 보고 유튜브 검색
+            ids.forEach(id => { musicList.push({ type: 'yt', id, title: id }); fetchTitle(id); });
+            input.value = '';
+            onTracksAdded(ids.length);
+        }
+
+        function addAudioFiles(files) {
+            if (!files || !files.length) return;
+            let n = 0;
+            for (const f of files) {
+                if (!f.type.startsWith('audio/')) continue;
+                musicList.push({ type: 'file', url: URL.createObjectURL(f), title: f.name.replace(/\.[^.]+$/, '') });
+                n++;
+            }
+            if (n) onTracksAdded(n);
+        }
+
+        function onTracksAdded(n) {
+            const wasEmpty = musicList.length === n;
+            savePlayback(); renderMusicList();
+            showToast(`${n}곡을 목록에 추가했어요.`, 'success');
+            if (musicActive && wasEmpty) playTrack(0);
+        }
+
+        function fetchTitle(id) {
+            fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + id)}&format=json`)
+                .then(r => r.ok ? r.json() : null)
+                .then(d => {
+                    if (!d || !d.title) return;
+                    musicList.forEach(t => { if (t.type === 'yt' && t.id === id) t.title = d.title; });
+                    savePlayback(); renderMusicList();
+                }).catch(() => {});
+        }
+
+        function renderMusicList() {
+            const box = document.getElementById('music-list');
+            box.innerHTML = '';
+            if (musicList.length === 0) {
+                box.innerHTML = '<div class="text-xs text-slate-400 text-center py-3 border border-dashed border-slate-300 rounded-xl">아직 음악이 없어요 (음악 없이도 재생돼요)</div>';
+                return;
+            }
+            musicList.forEach((t, i) => {
+                const cur = i === musicIndex;
+                const row = document.createElement('div');
+                row.className = `flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm border ${cur ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200'}`;
+                const icon = cur && musicActive ? 'fa-volume-up text-blue-500' : (t.type === 'yt' ? 'fab fa-youtube text-red-500' : 'fa-music text-indigo-500');
+                row.innerHTML = `
+                    <i class="${icon.startsWith('fab') ? icon : 'fas ' + icon} w-5 text-center shrink-0"></i>
+                    <button class="flex-1 text-left truncate hover:text-blue-600 ${cur ? 'font-bold text-blue-700' : 'text-slate-700'}" data-act="play"></button>
+                    <button class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0" data-act="up" title="위로"><i class="fas fa-chevron-up text-xs"></i></button>
+                    <button class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0" data-act="down" title="아래로"><i class="fas fa-chevron-down text-xs"></i></button>
+                    <button class="w-7 h-7 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 shrink-0" data-act="del" title="빼기"><i class="fas fa-times text-xs"></i></button>`;
+                const titleBtn = row.querySelector('[data-act="play"]');
+                titleBtn.textContent = `${i + 1}. ${t.title}`;
+                titleBtn.title = t.title;
+                titleBtn.onclick = () => playTrack(i);
+                row.querySelector('[data-act="up"]').onclick = () => moveTrack(i, -1);
+                row.querySelector('[data-act="down"]').onclick = () => moveTrack(i, 1);
+                row.querySelector('[data-act="del"]').onclick = () => removeTrack(i);
+                box.appendChild(row);
+            });
+        }
+
+        function moveTrack(i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= musicList.length) return;
+            [musicList[i], musicList[j]] = [musicList[j], musicList[i]];
+            if (musicIndex === i) musicIndex = j; else if (musicIndex === j) musicIndex = i;
+            savePlayback(); renderMusicList();
+        }
+
+        function removeTrack(i) {
+            const removed = musicList.splice(i, 1)[0];
+            const wasCurrent = i === musicIndex;
+            if (i < musicIndex) musicIndex--;
+            if (musicIndex >= musicList.length) musicIndex = 0;
+            if (removed.type === 'file') URL.revokeObjectURL(removed.url);
+            savePlayback();
+            if (musicList.length === 0) { haltAllMusic(); renderMusicList(); return; }
+            if (wasCurrent && musicActive) playTrack(musicIndex); else renderMusicList();
+        }
+
+        function getVol() { return parseInt(document.getElementById('volume-slider').value, 10); }
+
+        function haltAllMusic() {
+            const audio = document.getElementById('local-audio');
+            audio.pause();
+            if (ytPlayer && ytPlayerReady) ytPlayer.pauseVideo();
+        }
+
+        function playTrack(i) {
+            if (!musicList.length) return;
+            musicIndex = ((i % musicList.length) + musicList.length) % musicList.length;
+            renderMusicList();
+            if (!musicActive) return; // 슬라이드쇼 시작 전엔 첫 곡만 정해둠
+            const t = musicList[musicIndex];
+            const audio = document.getElementById('local-audio');
+            if (t.type === 'file') {
+                if (ytPlayer && ytPlayerReady) ytPlayer.pauseVideo();
+                audio.src = t.url; audio.volume = getVol() / 100;
+                audio.play().catch(() => {});
+            } else {
+                audio.pause(); audio.removeAttribute('src');
+                playYt(t.id);
+            }
+        }
+        function nextTrack() { playTrack(musicIndex + 1); }
+
+        function playYt(id) {
+            if (!isYtReady) return; // API 로딩되면 onYouTubeIframeAPIReady에서 이어서 재생
+            if (ytPlayer && ytPlayerReady) { ytPlayer.loadVideoById(id); ytPlayer.setVolume(getVol()); return; }
+            if (ytPlayer) return; // 플레이어 만드는 중 → onReady에서 현재 곡 재생
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '300', width: '300',
+                playerVars: { 'autoplay': 1, 'controls': 0, 'origin': window.location.origin },
+                events: {
+                    'onReady': e => {
+                        ytPlayerReady = true;
+                        e.target.setVolume(getVol());
+                        const t = musicList[musicIndex];
+                        if (musicActive && t && t.type === 'yt') e.target.loadVideoById(t.id);
+                    },
+                    'onStateChange': e => {
+                        if (e.data === 1) ytErrorCount = 0;
+                        if (e.data === 0 && musicActive) nextTrack();
+                    },
+                    'onError': () => {
+                        ytErrorCount++;
+                        if (musicActive && ytErrorCount < musicList.length) { showToast('재생할 수 없는 곡이라 다음 곡으로 넘어가요.'); nextTrack(); }
+                        else if (musicActive) showToast('재생할 수 있는 유튜브 곡이 없어요. 다른 링크를 넣어주세요.');
                     }
                 }
-            }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('local-audio').addEventListener('ended', () => { if (musicActive) nextTrack(); });
+        });
+
+        function startMusic() {
+            musicActive = true; ytErrorCount = 0;
+            if (musicList.length) playTrack(musicIndex); else renderMusicList();
+        }
+        function pauseMusic() { musicActive = false; haltAllMusic(); renderMusicList(); }
+        function resumeMusic() {
+            musicActive = true;
+            const t = musicList[musicIndex];
+            if (!t) return;
+            const audio = document.getElementById('local-audio');
+            if (t.type === 'file' && audio.getAttribute('src') === t.url) { audio.play().catch(() => {}); renderMusicList(); return; }
+            if (t.type === 'yt' && ytPlayer && ytPlayerReady && ytPlayer.getVideoData && ytPlayer.getVideoData().video_id === t.id) { ytPlayer.playVideo(); renderMusicList(); return; }
+            playTrack(musicIndex);
         }
 
         function setVolume(val) {
             document.getElementById('local-audio').volume = val/100;
-            if (ytPlayer && typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(val);
+            if (ytPlayer && ytPlayerReady) ytPlayer.setVolume(val);
+        }
+
+        /* =========================================
+           슬라이드쇼 (사진/영상 시간 따로)
+        ========================================= */
+        let mediaItems = [];
+        let currentIndex = 0; let slideTimer = null; let currentMediaEl = null; let isPlaying = false; let controlsTimeout = null;
+        const effects = ['effect-fade', 'effect-zoom', 'effect-pan-right', 'effect-pan-left'];
+
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) mediaItems.push({ type: 'image', url: URL.createObjectURL(file) });
+                else if (file.type.startsWith('video/')) mediaItems.push({ type: 'video', url: URL.createObjectURL(file) });
+            }
+            document.getElementById('photo-count').innerText = mediaItems.length;
+            document.getElementById('clear-photos-btn').classList.remove('hidden');
+        }
+
+        function clearPhotos() {
+            mediaItems.forEach(item => URL.revokeObjectURL(item.url));
+            mediaItems = [];
+            document.getElementById('photo-count').innerText = 0;
+            document.getElementById('clear-photos-btn').classList.add('hidden');
+            showToast('파일이 모두 비워졌습니다.', 'success');
+        }
+
+        // 재생 옵션 블록을 설정 화면 ↔ 슬라이드쇼 패널 사이로 옮김 (같은 입력칸을 그대로 씀)
+        function moveOptionsTo(where) {
+            const opts = document.getElementById('play-options');
+            document.getElementById(where === 'panel' ? 'play-options-panel' : 'play-options-home').appendChild(opts);
         }
 
         function startSlideshow() {
             if (mediaItems.length === 0) { showToast("사진이나 동영상을 먼저 추가해주세요."); return; }
-            slideDuration = (parseFloat(document.getElementById('duration-val').value) || 4) * 1000;
-            
+
             document.getElementById('setup-view').classList.add('hidden');
             document.getElementById('slideshow-view').classList.remove('hidden');
+            moveOptionsTo('panel');
+            toggleSlidePanel(false);
             showControlsTemporary();
-            setupAudio();
-            
+            startMusic();
+
             const overlay = document.getElementById('slideshow-title-overlay');
             document.getElementById('overlay-title-text').innerText = appSettings.title;
             overlay.classList.remove('opacity-0');
             setTimeout(() => overlay.classList.add('opacity-0'), 4000);
 
             currentIndex = 0; document.getElementById('slideshow-container').innerHTML = '';
+            isPlaying = true;
             showSlide(currentIndex);
-            isPlaying = true; slideIntervalId = setInterval(nextSlide, slideDuration);
+            scheduleNext();
             updatePlayPauseIcon();
         }
 
-        /* ❗ 동영상 렌더링 지원 로직 ❗ */
         function showSlide(index) {
+            if (currentMediaEl && currentMediaEl.tagName === 'VIDEO') { currentMediaEl.onended = null; currentMediaEl.onerror = null; }
             const wrapper = document.createElement('div');
             wrapper.className = 'slide-wrapper';
-            
+
             const content = document.createElement('div');
             content.className = `slide-content ${appSettings.frameStyle}`;
-            const randomEffect = effects[Math.floor(Math.random() * effects.length)];
-            content.classList.add(randomEffect);
+            content.classList.add(effects[Math.floor(Math.random() * effects.length)]);
 
             const currentItem = mediaItems[index];
             let mediaEl;
-
-            // 동영상일 경우
             if (currentItem.type === 'video') {
                 mediaEl = document.createElement('video');
                 mediaEl.src = currentItem.url;
-                mediaEl.autoplay = true;
+                mediaEl.autoplay = isPlaying;
                 mediaEl.muted = true; // BGM과 겹치지 않게 음소거
-                mediaEl.loop = true;
+                mediaEl.loop = !playback.videoToEnd;
                 mediaEl.playsInline = true;
-            } 
-            // 사진일 경우
-            else {
+            } else {
                 mediaEl = document.createElement('img');
                 mediaEl.src = currentItem.url;
             }
-            
             mediaEl.className = 'slide-img';
             content.appendChild(mediaEl);
             wrapper.appendChild(content);
             const container = document.getElementById('slideshow-container');
             container.appendChild(wrapper);
+            currentMediaEl = mediaEl;
 
             requestAnimationFrame(() => setTimeout(() => wrapper.classList.add('active'), 50));
 
-            const allWrappers = container.querySelectorAll('.slide-wrapper');
-            if (allWrappers.length > 2) {
-                setTimeout(() => { if (allWrappers[0]) container.removeChild(allWrappers[0]); }, 2000);
-            }
-            allWrappers.forEach(w => { if (w !== wrapper) w.classList.remove('active'); });
+            // 이전 장들은 서서히 사라진 뒤 지움 (짧은 시간으로 빨리 넘겨도 쌓이지 않게)
+            container.querySelectorAll('.slide-wrapper').forEach(w => {
+                if (w === wrapper) return;
+                w.classList.remove('active');
+                const v = w.querySelector('video'); if (v) v.pause();
+                setTimeout(() => { if (!w.classList.contains('active')) w.remove(); }, 1600);
+            });
         }
 
-        function nextSlide() { if(mediaItems.length===0)return; currentIndex = (currentIndex + 1) % mediaItems.length; showSlide(currentIndex); }
-        function prevSlide() { if(mediaItems.length===0)return; currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length; showSlide(currentIndex); resetInterval(); }
-        
+        // 지금 화면에 있는 사진/영상 기준으로 다음 장 넘김 예약 (시간을 바꾸면 그 자리에서 다시 계산)
+        function scheduleNext() {
+            clearTimeout(slideTimer); slideTimer = null;
+            const el = currentMediaEl;
+            if (el && el.tagName === 'VIDEO') { el.onended = null; el.onerror = null; }
+            if (!isPlaying || mediaItems.length === 0) return;
+            const item = mediaItems[currentIndex];
+            if (item.type === 'video' && el && el.tagName === 'VIDEO') {
+                el.onerror = () => { if (isPlaying) nextSlide(); };
+                if (playback.videoToEnd) {
+                    el.loop = false;
+                    if (el.ended) { nextSlide(); return; }
+                    el.onended = () => { if (isPlaying) nextSlide(); };
+                    return;
+                }
+                el.loop = true;
+                slideTimer = setTimeout(nextSlide, playback.videoDuration * 1000);
+            } else {
+                slideTimer = setTimeout(nextSlide, playback.photoDuration * 1000);
+            }
+        }
+
+        function nextSlide() { if (mediaItems.length === 0) return; currentIndex = (currentIndex + 1) % mediaItems.length; showSlide(currentIndex); scheduleNext(); }
+        function prevSlide() { if (mediaItems.length === 0) return; currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length; showSlide(currentIndex); scheduleNext(); }
+
         function togglePlayPause() {
             if (isPlaying) {
-                clearInterval(slideIntervalId); isPlaying = false;
-                if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-                document.getElementById('local-audio').pause();
+                isPlaying = false; scheduleNext();
+                if (currentMediaEl && currentMediaEl.tagName === 'VIDEO') currentMediaEl.pause();
+                pauseMusic();
             } else {
-                nextSlide(); slideIntervalId = setInterval(nextSlide, slideDuration); isPlaying = true;
-                if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
-                if (document.getElementById('local-audio').src) document.getElementById('local-audio').play();
+                isPlaying = true;
+                if (currentMediaEl && currentMediaEl.tagName === 'VIDEO') currentMediaEl.play().catch(() => {});
+                scheduleNext();
+                resumeMusic();
             }
             updatePlayPauseIcon();
+            showControlsTemporary();
         }
         function updatePlayPauseIcon() {
             const btn = document.getElementById('play-pause-btn');
             btn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play ml-1"></i>';
         }
-        function resetInterval() { if (isPlaying) { clearInterval(slideIntervalId); slideIntervalId = setInterval(nextSlide, slideDuration); } }
-        
+
         function stopSlideshow() {
-            clearInterval(slideIntervalId); isPlaying = false;
-            document.getElementById('local-audio').pause();
-            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+            isPlaying = false; scheduleNext();
+            pauseMusic();
+            toggleSlidePanel(false);
+            moveOptionsTo('home');
+            document.getElementById('slideshow-container').innerHTML = '';
+            currentMediaEl = null;
             document.getElementById('slideshow-container').classList.remove('cursor-none');
             document.getElementById('setup-view').classList.remove('hidden');
             document.getElementById('slideshow-view').classList.add('hidden');
         }
-        
-        function showControlsTemporary() {
-            document.getElementById('slideshow-container').classList.remove('cursor-none');
-            document.getElementById('slideshow-controls').style.opacity = '1';
-            clearTimeout(controlsTimeout);
-            controlsTimeout = setTimeout(() => { if(isPlaying){ document.getElementById('slideshow-container').classList.add('cursor-none'); document.getElementById('slideshow-controls').style.opacity = '0'; } }, 3000);
+
+        function isPanelOpen() { return !document.getElementById('slide-panel').classList.contains('hidden'); }
+        function toggleSlidePanel(force) {
+            const panel = document.getElementById('slide-panel');
+            const open = force === undefined ? !isPanelOpen() : force;
+            panel.classList.toggle('hidden', !open);
+            showControlsTemporary();
         }
-        
+
+        function setControlsVisible(on) {
+            document.getElementById('slideshow-container').classList.toggle('cursor-none', !on);
+            document.getElementById('slideshow-controls').style.opacity = on ? '1' : '0';
+            document.getElementById('slide-settings-btn').style.opacity = on ? '1' : '0';
+        }
+        function showControlsTemporary() {
+            setControlsVisible(true);
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => { if (isPlaying && !isPanelOpen()) setControlsVisible(false); }, 3000);
+        }
+
         document.addEventListener('keydown', e => {
             if (document.getElementById('slideshow-view').classList.contains('hidden')) return;
+            const tagName = (e.target && e.target.tagName) || '';
+            if (tagName === 'INPUT' || tagName === 'TEXTAREA') { if (e.key === 'Escape') e.target.blur(); return; }
             showControlsTemporary();
-            if (e.key === 'ArrowRight') { nextSlide(); resetInterval(); } 
-            else if (e.key === 'ArrowLeft') { prevSlide(); resetInterval(); } 
-            else if (e.key === ' ') { e.preventDefault(); togglePlayPause(); } 
-            else if (e.key === 'Escape') stopSlideshow();
+            if (e.key === 'ArrowRight') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+            else if (e.key === ' ') { e.preventDefault(); togglePlayPause(); }
+            else if (e.key === 'Escape') { if (isPanelOpen()) toggleSlidePanel(false); else stopSlideshow(); }
         });
     </script>
 </body>
