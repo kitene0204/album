@@ -115,18 +115,6 @@
         }
         .frame-polaroid .slide-img { max-height: calc(90vh - 7.5vw); }
 
-        /* 3. 클래식 원목 액자 */
-        .frame-wood {
-            background-color: #fff;
-            padding: 1vw;
-            border: 20px solid #5c4033;
-            border-image: linear-gradient(45deg, #3e2723, #8d6e63, #3e2723) 1;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.7);
-            max-width: 90vw;
-            max-height: 90vh;
-        }
-        .frame-wood .slide-img { max-height: calc(90vh - 2vw - 40px); }
-
         /* 4. 영화 필름 스타일 */
         .frame-film {
             background-color: #000;
@@ -283,23 +271,84 @@
         }
         .frame-sticker .slide-img { border-radius: 16px; max-height: calc(86vh - 34px); }
 
+        /* 스레드 느낌 카드 */
+        .frame-threads {
+            --u: 1.9vh;
+            flex-direction: column; align-items: stretch !important;
+            background: #fff; color: #000;
+            border-radius: calc(var(--u) * 1.2);
+            padding: calc(var(--u) * 1.1) calc(var(--u) * 1.3) calc(var(--u) * 0.8);
+            box-shadow: 0 18px 44px rgba(0,0,0,0.25);
+            min-width: 50vh; max-width: 88vw;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        }
+        .th-row { display: flex; gap: calc(var(--u) * 0.8); }
+        .th-side { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+        .th-avatar { width: 4.6vh; height: 4.6vh; border-radius: 50%; background: #fff3c4; border: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: center; font-size: 2.3vh; }
+        .th-line { width: 2px; flex: 1; background: #e5e5e5; margin-top: 0.8vh; border-radius: 2px; }
+        .th-main { min-width: 0; display: flex; flex-direction: column; }
+        .th-head { display: flex; align-items: center; gap: 0.6em; font-size: var(--u); height: 3.4vh; }
+        .th-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .th-name i { color: #0095f6; font-size: 0.85em; margin-left: 0.3em; }
+        .th-time { color: #999; }
+        .th-more { margin-left: auto; color: #000; letter-spacing: 1px; }
+        .th-text { font-size: calc(var(--u) * 1.05); line-height: 1.4; margin: 0.2vh 0 1vh; }
+        .th-media { border-radius: calc(var(--u) * 0.8); overflow: hidden; border: 1px solid #eee; align-self: flex-start; }
+        .frame-threads .slide-img { max-height: calc(94vh - 22vh); max-width: 100%; display: block; }
+        .th-actions { display: flex; gap: calc(var(--u) * 1.4); font-size: calc(var(--u) * 1.3); height: 5vh; align-items: center; color: #222; }
+        .th-like.fas { color: #ff3040; animation: igLike 0.45s ease-out; }
+        .th-stats { font-size: calc(var(--u) * 0.85); color: #999; }
+
+        /* 페이스북 느낌 카드 */
+        .frame-fb {
+            --u: 1.9vh;
+            flex-direction: column; align-items: stretch !important;
+            background: #fff; color: #050505;
+            border-radius: calc(var(--u) * 0.6);
+            overflow: hidden;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+            min-width: 52vh; max-width: 88vw;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        }
+        .fb-head { display: flex; align-items: center; gap: calc(var(--u) * 0.6); padding: calc(var(--u) * 0.8) calc(var(--u) * 0.9) 0; }
+        .fb-avatar { width: 4.4vh; height: 4.4vh; border-radius: 50%; background: #e7f3ff; display: flex; align-items: center; justify-content: center; font-size: 2.2vh; flex-shrink: 0; }
+        .fb-who { flex: 1; min-width: 0; line-height: 1.3; }
+        .fb-name { font-weight: 700; font-size: var(--u); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fb-meta { font-size: calc(var(--u) * 0.75); color: #65676b; }
+        .fb-meta i { font-size: 0.9em; }
+        .fb-more { font-size: calc(var(--u) * 1.3); color: #65676b; letter-spacing: 1px; }
+        .fb-text { font-size: var(--u); padding: calc(var(--u) * 0.6) calc(var(--u) * 0.9); width: 0; min-width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fb-media { background: #f0f2f5; display: flex; justify-content: center; }
+        .frame-fb .slide-img { max-height: calc(94vh - 24vh); max-width: 100%; display: block; }
+        .fb-react { display: flex; justify-content: space-between; align-items: center; padding: calc(var(--u) * 0.5) calc(var(--u) * 0.9); font-size: calc(var(--u) * 0.85); color: #65676b; border-bottom: 1px solid #ced0d4; margin: 0 calc(var(--u) * 0.9); padding-left: 0; padding-right: 0; }
+        .fb-emo { letter-spacing: -0.2em; margin-right: 0.6em; }
+        .fb-btns { display: flex; justify-content: space-around; padding: calc(var(--u) * 0.4) 0 calc(var(--u) * 0.5); }
+        .fb-btn { font-weight: 600; font-size: calc(var(--u) * 0.9); color: #65676b; padding: 0.6vh 1.6vh; white-space: nowrap; }
+        .fb-btn.on { color: #0866ff; }
+        .fb-btn.on i { animation: igLike 0.45s ease-out; }
+
         /* 11. 네컷 사진관 (사진관 스티커 사진 느낌) */
+        /* 사진 4장을 2×2로 붙인 판 + 아래 반 이름·날짜. 판 색은 장마다 바뀜 (--bc 판 색, --bt 글자 색) */
         .frame-booth {
-            position: relative;
-            background: #161616;
-            padding: 1.4vw 1.4vw 11vh;
-            border-radius: 6px;
-            box-shadow: 0 18px 44px rgba(0,0,0,0.45);
-            max-width: 88vw; max-height: 92vh;
+            --bc: #111; --bt: #fff;
+            flex-direction: column;
+            align-items: stretch !important;
+            background: var(--bc);
+            padding: 1.8vh 1.8vh 0;
+            border-radius: 0.6vh;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.40);
+            max-width: 94vw;
         }
-        .frame-booth .slide-img { border: 0.35vh solid #fff; max-height: calc(92vh - 1.4vw - 11vh); }
-        .frame-booth::after {
-            content: '♡ ' attr(data-title) ' ♡' '\A' attr(data-date);
-            white-space: pre;
-            position: absolute; left: 0; right: 0; bottom: 2.2vh;
-            text-align: center; color: #fff; line-height: 1.5;
-            font-family: 'BMJUA', sans-serif; font-size: 2.6vh; letter-spacing: 1px;
-        }
+        .booth-grid { display: grid; grid-template-columns: repeat(2, 44vh); gap: 1.4vh; }
+        .booth-grid .booth-cell { width: 44vh; height: 33vh; overflow: hidden; background: rgba(0,0,0,0.15); }
+        .booth-grid .booth-cell .slide-img { width: 100%; height: 100%; object-fit: cover; max-height: none; max-width: none; display: block; }
+        .booth-grid.single { grid-template-columns: auto; }
+        .booth-grid.single .booth-cell { width: auto; height: auto; }
+        .booth-grid.single .booth-cell .slide-img { width: auto; height: auto; max-height: 67.4vh; max-width: 88vw; object-fit: contain; }
+        .booth-foot { height: 13vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--bt); gap: 0.6vh; }
+        .booth-title { font-family: 'BMJUA', sans-serif; font-size: 3.6vh; letter-spacing: 1px; line-height: 1; white-space: nowrap; }
+        .booth-title .deco { font-size: 2.4vh; margin: 0 1vh; opacity: 0.85; }
+        .booth-date { font: 600 1.6vh 'Courier New', monospace; letter-spacing: 0.5vh; opacity: 0.75; }
 
         /* 12. 레트로 캠코더 (뷰파인더 화면) */
         .frame-camcorder {
@@ -552,13 +601,6 @@
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="frame-style" value="frame-wood" class="peer hidden">
-                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
-                                <i class="fas fa-border-all text-2xl text-slate-400 mb-2"></i>
-                                <div class="font-bold text-slate-700 text-sm">원목 액자</div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-film" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-film text-2xl text-slate-400 mb-2"></i>
@@ -583,7 +625,21 @@
                             <input type="radio" name="frame-style" value="frame-insta" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-heart text-2xl text-pink-400 mb-2"></i>
-                                <div class="font-bold text-slate-700 text-sm">SNS 피드</div>
+                                <div class="font-bold text-slate-700 text-sm">인스타 피드</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-threads" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-at text-2xl text-slate-800 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">스레드 피드</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-fb" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-thumbs-up text-2xl text-blue-600 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">페이스북 피드</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
@@ -833,7 +889,8 @@
             if (!stage) return;
             const style = (document.querySelector('input[name="frame-style"]:checked') || {}).value || 'frame-none';
             const title = document.getElementById('setting-title').value.trim() || '오늘도 맑음, 6학년 1반';
-            const firstPhoto = mediaItems.find(m => m.type === 'image');
+            const photos = mediaItems.filter(m => m.type === 'image').map(m => m.url);
+            const firstPhoto = photos.length ? { url: photos[0] } : null;
             stage.innerHTML = '';
             const wrapper = document.createElement('div');
             wrapper.className = 'slide-wrapper';
@@ -845,7 +902,12 @@
             const img = document.createElement('img');
             img.className = 'slide-img';
             img.src = firstPhoto ? firstPhoto.url : SAMPLE_PHOTO;
-            if (style === 'frame-insta') buildFeedCard(content, img, 0, title); else content.appendChild(img);
+            if (style === 'frame-booth') {
+                const urls = [0, 1, 2, 3].map(k => photos.length ? photos[k % photos.length] : SAMPLE_PHOTO);
+                buildBoothCard(content, urls.map(makeImg), 0, title, todayStamp());
+            }
+            else if (SOCIAL_FRAMES[style]) SOCIAL_FRAMES[style](content, img, 0, title);
+            else content.appendChild(img);
             wrapper.appendChild(content);
             stage.appendChild(wrapper);
             requestAnimationFrame(() => wrapper.classList.add('active'));
@@ -1330,6 +1392,108 @@
             setTimeout(() => { like.classList.replace('far', 'fas'); likes && foot.querySelector('.ig-likes') && (foot.querySelector('.ig-likes').textContent = `좋아요 ${likes + 1}개`); }, 1400);
         }
 
+        /* ---------- 스레드 느낌 카드: 글 먼저, 그 아래 둥근 사진, 왼쪽 프로필 줄 ---------- */
+        function buildThreadsCard(content, mediaEl, index, titleOverride) {
+            const title = (titleOverride !== undefined ? titleOverride : appSettings.title) || '';
+            const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+            const row = el('div', 'th-row');
+            const side = el('div', 'th-side');
+            const av = el('div', 'th-avatar', '☀️');
+            side.appendChild(av); side.appendChild(el('div', 'th-line'));
+            const main = el('div', 'th-main');
+            const head = el('div', 'th-head');
+            const name = el('span', 'th-name', title); name.appendChild(el('i', 'fas fa-circle-check'));
+            head.appendChild(name);
+            head.appendChild(el('span', 'th-time', feedTimes[(index + 2) % feedTimes.length]));
+            head.appendChild(el('span', 'th-more', '···'));
+            main.appendChild(head);
+            main.appendChild(el('div', 'th-text', feedCaptions[(index + 3) % feedCaptions.length]));
+            const media = el('div', 'th-media'); media.appendChild(mediaEl); main.appendChild(media);
+            const acts = el('div', 'th-actions');
+            const like = el('i', 'far fa-heart th-like');
+            [like, el('i', 'far fa-comment'), el('i', 'fas fa-retweet'), el('i', 'far fa-paper-plane')].forEach(i => acts.appendChild(i));
+            main.appendChild(acts);
+            const likes = 12 + ((index * 5 + 4) % 20), replies = 2 + (index % 7);
+            const stats = el('div', 'th-stats', `답글 ${replies}개 · 좋아요 ${likes}개`);
+            main.appendChild(stats);
+            row.appendChild(side); row.appendChild(main);
+            content.appendChild(row);
+            setTimeout(() => { like.classList.replace('far', 'fas'); stats.textContent = `답글 ${replies}개 · 좋아요 ${likes + 1}개`; }, 1400);
+        }
+
+        /* ---------- 페이스북 느낌 카드: 머리 + 글 + 꽉 찬 사진 + 공감 줄 + 좋아요/댓글/공유 버튼 ---------- */
+        function buildFbCard(content, mediaEl, index, titleOverride) {
+            const title = (titleOverride !== undefined ? titleOverride : appSettings.title) || '';
+            const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+            const head = el('div', 'fb-head');
+            head.appendChild(el('div', 'fb-avatar', '☀️'));
+            const who = el('div', 'fb-who');
+            who.appendChild(el('div', 'fb-name', title));
+            const meta = el('div', 'fb-meta', feedTimes[(index + 4) % feedTimes.length] + ' · '); meta.appendChild(el('i', 'fas fa-earth-asia'));
+            who.appendChild(meta);
+            head.appendChild(who);
+            head.appendChild(el('div', 'fb-more', '···'));
+            const text = el('div', 'fb-text', feedCaptions[(index + 5) % feedCaptions.length]);
+            const media = el('div', 'fb-media'); media.appendChild(mediaEl);
+            const likes = 20 + ((index * 3 + 1) % 18), comments = 1 + (index % 9);
+            const react = el('div', 'fb-react');
+            const left = el('div', 'fb-react-left');
+            left.appendChild(el('span', 'fb-emo', '👍❤️😆'));
+            const cnt = el('span', 'fb-count', `우리 반 친구들 외 ${likes}명`);
+            left.appendChild(cnt);
+            react.appendChild(left);
+            react.appendChild(el('div', 'fb-comments', `댓글 ${comments}개`));
+            const btns = el('div', 'fb-btns');
+            const likeBtn = el('div', 'fb-btn'); likeBtn.appendChild(el('i', 'far fa-thumbs-up')); likeBtn.appendChild(document.createTextNode(' 좋아요'));
+            const cBtn = el('div', 'fb-btn'); cBtn.appendChild(el('i', 'far fa-comment')); cBtn.appendChild(document.createTextNode(' 댓글 달기'));
+            const sBtn = el('div', 'fb-btn'); sBtn.appendChild(el('i', 'fas fa-share')); sBtn.appendChild(document.createTextNode(' 공유하기'));
+            [likeBtn, cBtn, sBtn].forEach(b => btns.appendChild(b));
+            [head, text, media, react, btns].forEach(x => content.appendChild(x));
+            setTimeout(() => { likeBtn.classList.add('on'); likeBtn.querySelector('i').classList.replace('far', 'fas'); cnt.textContent = `우리 반 친구들 외 ${likes + 1}명`; }, 1400);
+        }
+
+        const SOCIAL_FRAMES = {
+            'frame-insta': (c, m, i, t) => buildFeedCard(c, m, i, t),
+            'frame-threads': buildThreadsCard,
+            'frame-fb': buildFbCard
+        };
+
+        /* ---------- 네컷 사진관: 사진 4장을 한 판에 ---------- */
+        const boothColors = [['#111111', '#ffffff'], ['#ffffff', '#222222'], ['#ffd6e0', '#c2255c'], ['#d0ebff', '#1864ab'], ['#e5dbff', '#5f3dc4'], ['#fff3bf', '#e67700']];
+        const boothDecos = [['✦', '✦'], ['♡', '♡'], ['☀︎', '☀︎'], ['★', '★'], ['✿', '✿']];
+        let boothStep = 1; // 지금 판에 쓴 사진 수 (다음 판은 그만큼 건너뜀)
+        let boothTurn = 0; // 판마다 색이 바뀌도록 세는 수
+
+        // index부터 이어지는 사진(최대 4장)을 한 판으로. 영상을 만나면 거기서 끊고, 모자라면 앞쪽 사진을 빌려 칸을 채움(건너뛰는 수에는 안 셈)
+        function boothGroup(index) {
+            const urls = []; let i = index;
+            while (urls.length < 4 && i < mediaItems.length && mediaItems[i].type === 'image') { urls.push(mediaItems[i].url); i++; }
+            const step = Math.max(1, urls.length);
+            const allImgs = mediaItems.filter(m => m.type === 'image').map(m => m.url);
+            let k = 0;
+            while (urls.length && urls.length < 4 && allImgs.length) { urls.push(allImgs[k % allImgs.length]); k++; }
+            return { urls, step };
+        }
+
+        function buildBoothCard(content, cells, colorIndex, title, date) {
+            const [bc, bt] = boothColors[colorIndex % boothColors.length];
+            const [d1, d2] = boothDecos[colorIndex % boothDecos.length];
+            content.style.setProperty('--bc', bc);
+            content.style.setProperty('--bt', bt);
+            const grid = document.createElement('div');
+            grid.className = 'booth-grid' + (cells.length === 1 ? ' single' : '');
+            cells.forEach(el => { const cell = document.createElement('div'); cell.className = 'booth-cell'; cell.appendChild(el); grid.appendChild(cell); });
+            const foot = document.createElement('div'); foot.className = 'booth-foot';
+            const t = document.createElement('div'); t.className = 'booth-title';
+            const a = document.createElement('span'); a.className = 'deco'; a.textContent = d1;
+            const b = document.createElement('span'); b.className = 'deco'; b.textContent = d2;
+            t.appendChild(a); t.appendChild(document.createTextNode(title)); t.appendChild(b);
+            const d = document.createElement('div'); d.className = 'booth-date'; d.textContent = date;
+            foot.appendChild(t); foot.appendChild(d);
+            content.appendChild(grid); content.appendChild(foot);
+        }
+        function makeImg(url) { const im = document.createElement('img'); im.className = 'slide-img'; im.src = url; return im; }
+
         function showSlide(index) {
             if (currentMediaEl && currentMediaEl.tagName === 'VIDEO') { currentMediaEl.onended = null; currentMediaEl.onerror = null; }
             const wrapper = document.createElement('div');
@@ -1355,7 +1519,16 @@
                 mediaEl.src = currentItem.url;
             }
             mediaEl.className = 'slide-img';
-            if (appSettings.frameStyle === 'frame-insta') buildFeedCard(content, mediaEl, index);
+            boothStep = 1;
+            if (appSettings.frameStyle === 'frame-booth') {
+                if (currentItem.type === 'image') {
+                    const g = boothGroup(index);
+                    boothStep = g.step;
+                    const imgs = g.urls.map((u, k) => k === 0 ? mediaEl : makeImg(u));
+                    buildBoothCard(content, imgs, boothTurn++, appSettings.title, todayStamp());
+                } else buildBoothCard(content, [mediaEl], boothTurn++, appSettings.title, todayStamp());
+            }
+            else if (SOCIAL_FRAMES[appSettings.frameStyle]) SOCIAL_FRAMES[appSettings.frameStyle](content, mediaEl, index);
             else content.appendChild(mediaEl);
             wrapper.appendChild(content);
             const container = document.getElementById('slideshow-container');
@@ -1397,10 +1570,17 @@
 
         function nextSlide() {
             if (mediaItems.length === 0) return;
-            if (recorder && currentIndex === mediaItems.length - 1) { finishRecording(); return; } // 녹화는 한 바퀴만
-            currentIndex = (currentIndex + 1) % mediaItems.length; showSlide(currentIndex); scheduleNext();
+            const step = boothStep || 1; // 네컷 판은 쓴 사진 수만큼 건너뜀
+            if (recorder && currentIndex + step >= mediaItems.length) { finishRecording(); return; } // 녹화는 한 바퀴만
+            currentIndex = currentIndex + step >= mediaItems.length ? 0 : currentIndex + step;
+            showSlide(currentIndex); scheduleNext();
         }
-        function prevSlide() { if (mediaItems.length === 0) return; currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length; showSlide(currentIndex); scheduleNext(); }
+        function prevSlide() {
+            if (mediaItems.length === 0) return;
+            const step = appSettings.frameStyle === 'frame-booth' ? 4 : 1;
+            currentIndex = currentIndex - step < 0 ? (currentIndex === 0 ? Math.max(0, mediaItems.length - step) : 0) : currentIndex - step;
+            showSlide(currentIndex); scheduleNext();
+        }
 
         function togglePlayPause() {
             if (isPlaying) {
