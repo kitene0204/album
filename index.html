@@ -250,7 +250,7 @@
                             <div class="flex flex-col gap-2 relative z-10">
                                 <div class="relative w-full">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fab fa-youtube text-red-500"></i></div>
-                                    <input type="text" id="youtube-link" placeholder="유튜브 BGM 링크 붙여넣기" class="w-full pl-10 pr-20 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-sm">
+                                    <input type="text" id="youtube-link" placeholder="유튜브 링크 붙여넣기 또는 검색어 입력" class="w-full pl-10 pr-20 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 text-sm">
                                 </div>
                                 <div class="flex gap-2">
                                     <button onclick="applyYoutubeLink()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl text-sm font-bold border border-blue-200"><i class="fas fa-check mr-1"></i> 적용</button>
@@ -483,7 +483,17 @@
             const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/);
             return (match && match[2].length === 11) ? match[2] : null;
         }
-        function searchYoutube() { window.open('https://www.youtube.com/results?search_query=감동적인 bgm', '_blank'); }
+        function searchYoutube() {
+            const typed = document.getElementById('youtube-link').value.trim();
+            let keyword = (typed && !getYouTubeId(typed)) ? typed : '';
+            if (!keyword) {
+                keyword = prompt('어떤 BGM을 찾을까요? (예: 신나는 bgm, 졸업식 bgm, 잔잔한 피아노)', '');
+                if (keyword === null) return;
+                keyword = keyword.trim();
+                if (!keyword) { showToast('검색어를 입력해주세요.'); return; }
+            }
+            window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(keyword), '_blank');
+        }
         function applyYoutubeLink() {
             const url = document.getElementById('youtube-link').value.trim();
             if (getYouTubeId(url)) showToast("유튜브 링크가 적용되었습니다.", "success");
