@@ -703,6 +703,13 @@
                             </div>
                         </label>
                     </div>
+                    <label class="mt-4 flex items-start gap-3 p-3 rounded-xl bg-pink-50 border border-pink-100 cursor-pointer">
+                        <input type="checkbox" id="setting-burst-booth" class="mt-1 w-4 h-4 accent-pink-500" checked onchange="setBurstBooth(this.checked)">
+                        <span>
+                            <span class="block font-bold text-slate-700 text-sm">📸 연속사진은 네컷으로</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">1초 안에 이어서 찍은 사진(3장 이상)을 찾아서, 어떤 액자를 골라도 그 묶음은 네컷 사진관으로 보여줘요.</span>
+                        </span>
+                    </label>
                 </div>
             </div>
             <div class="p-6 bg-slate-50 border-t border-slate-100 text-right">
@@ -817,7 +824,13 @@
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
             document.getElementById('setting-title').value = appSettings.title;
             document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
+            document.getElementById('setting-burst-booth').checked = appSettings.burstBooth !== false;
             applyShowFont();
+        }
+        async function setBurstBooth(on) {
+            appSettings.burstBooth = !!on;
+            try { localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings)); } catch (e) {}
+            if (db) { try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch (e) {} }
         }
 
         /* ---------- 슬라이드쇼 글자 폰트 고르기 (폰트를 더 넣으려면 여기 한 줄 + 위 @font-face 추가) ---------- */
@@ -1386,15 +1399,108 @@
         let currentIndex = 0; let slideTimer = null; let currentMediaEl = null; let isPlaying = false; let controlsTimeout = null;
         const effects = ['effect-fade', 'effect-zoom', 'effect-pan-right', 'effect-pan-left'];
 
-        function handleFiles(files) {
+        async function handleFiles(files) {
             if (!files || files.length === 0) return;
+            const added = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (file.type.startsWith('image/')) mediaItems.push({ type: 'image', url: URL.createObjectURL(file) });
-                else if (file.type.startsWith('video/')) mediaItems.push({ type: 'video', url: URL.createObjectURL(file) });
+                if (file.type.startsWith('image/')) { const it = { type: 'image', url: URL.createObjectURL(file), name: file.name, time: timeFromName(file.name) }; mediaItems.push(it); added.push([it, file]); }
+                else if (file.type.startsWith('video/')) mediaItems.push({ type: 'video', url: URL.createObjectURL(file), name: file.name });
             }
             document.getElementById('photo-count').innerText = mediaItems.length;
             document.getElementById('clear-photos-btn').classList.remove('hidden');
+            // 사진 속 촬영 시각(EXIF)을 읽어서 연속사진 묶음 찾기
+            await Promise.all(added.map(async ([it, file]) => { const t = await readExifTime(file); if (t) it.time = t; }));
+            const before = burstCount();
+            detectBursts();
+            const found = burstCount() - before;
+            if (found > 0) showToast(`📸 연속사진 ${found}묶음을 찾았어요! 네컷으로 보여줄게요.`, 'success');
+        }
+
+        /* ---------- 연속사진(고속 촬영) 찾기 ---------- */
+        const BURST_GAP_MS = 1000; // 앞 사진과 1초 안이면 같은 묶음
+        const BURST_MIN = 3;       // 3장 이상이어야 연속사진으로 봄
+
+        // JPEG의 EXIF에서 촬영 시각(DateTimeOriginal + 1/100초)을 읽음. 없으면 null
+        async function readExifTime(file) {
+            try {
+                const buf = await file.slice(0, 256 * 1024).arrayBuffer();
+                const v = new DataView(buf);
+                if (v.byteLength < 4 || v.getUint16(0) !== 0xFFD8) return null;
+                let p = 2;
+                while (p + 4 < v.byteLength) {
+                    if (v.getUint8(p) !== 0xFF) return null;
+                    const marker = v.getUint8(p + 1), len = v.getUint16(p + 2);
+                    if (marker === 0xE1 && v.getUint32(p + 4) === 0x45786966) return parseTiffTime(v, p + 10); // 'Exif'
+                    if (marker === 0xDA) return null; // 사진 데이터 시작: EXIF 없음
+                    p += 2 + len;
+                }
+            } catch (e) {}
+            return null;
+        }
+        function parseTiffTime(v, t) {
+            const le = v.getUint16(t) === 0x4949;
+            const u16 = o => v.getUint16(t + o, le), u32 = o => v.getUint32(t + o, le);
+            const str = (o, n) => { let s = ''; for (let i = 0; i < n; i++) { const c = v.getUint8(t + o + i); if (!c) break; s += String.fromCharCode(c); } return s; };
+            const readIfd = off => {
+                const out = {}; const n = u16(off);
+                for (let i = 0; i < n; i++) {
+                    const e = off + 2 + i * 12, tag = u16(e), type = u16(e + 2), cnt = u32(e + 4);
+                    if (type === 2) out[tag] = str(cnt > 4 ? u32(e + 8) : e + 8, cnt);
+                    else if (type === 4 || type === 3) out[tag] = type === 4 ? u32(e + 8) : u16(e + 8);
+                }
+                return out;
+            };
+            const ifd0 = readIfd(u32(4));
+            const ex = ifd0[0x8769] ? readIfd(ifd0[0x8769]) : {};
+            const dt = ex[0x9003] || ex[0x9004] || ifd0[0x0132];
+            const m = dt && dt.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+            if (!m) return null;
+            const sub = (ex[0x9291] || ex[0x9292] || '').trim();
+            const ms = sub ? Math.round(parseFloat('0.' + sub.replace(/\D/g, '')) * 1000) : 0;
+            return new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6], ms || 0).getTime();
+        }
+        // EXIF가 없을 때 파일 이름의 시각으로 (예: 20251120_143005_003.jpg, PXL_20251120_143005123.jpg)
+        function timeFromName(name) {
+            const m = (name || '').match(/(20\d{2})(\d{2})(\d{2})[_-]?(\d{2})(\d{2})(\d{2})(\d{3})?(?:[_-](\d{1,3}))?/);
+            if (!m) return null;
+            const ms = m[7] ? +m[7] : (m[8] ? Math.min(999, +m[8] * 100) : 0);
+            return new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6], ms).getTime();
+        }
+        function burstCount() { return new Set(mediaItems.filter(m => m.burst).map(m => m.burst)).size; }
+
+        // 촬영 시각이 1초 안으로 이어지는 사진 3장 이상을 한 묶음으로 표시하고, 흩어져 있으면 첫 장 자리로 모아 둠
+        let burstSeq = 0;
+        function detectBursts() {
+            mediaItems.forEach(m => { delete m.burst; });
+            const timed = mediaItems.filter(m => m.type === 'image' && m.time).sort((a, b) => a.time - b.time);
+            const groups = []; let cur = [];
+            timed.forEach(m => {
+                if (cur.length && m.time - cur[cur.length - 1].time > BURST_GAP_MS) { if (cur.length >= BURST_MIN) groups.push(cur); cur = []; }
+                cur.push(m);
+            });
+            if (cur.length >= BURST_MIN) groups.push(cur);
+            groups.forEach(g => {
+                const id = 'b' + (++burstSeq);
+                g.forEach(m => { m.burst = id; });
+                const first = Math.min(...g.map(m => mediaItems.indexOf(m)));
+                const rest = mediaItems.filter(m => m.burst !== id);
+                rest.splice(first, 0, ...g); // 묶음은 찍은 순서대로 한자리에
+                mediaItems = rest;
+            });
+        }
+        // index가 속한 연속사진 묶음 (첫 장 위치, 장 수). 없으면 null
+        function burstAt(index) {
+            const it = mediaItems[index];
+            if (!it || !it.burst || appSettings.burstBooth === false) return null;
+            let s = index, e = index;
+            while (s > 0 && mediaItems[s - 1].burst === it.burst) s--;
+            while (e + 1 < mediaItems.length && mediaItems[e + 1].burst === it.burst) e++;
+            return { start: s, end: e, items: mediaItems.slice(s, e + 1) };
+        }
+        // 묶음에서 고르게 4장 뽑기 (20장을 찍었으면 처음·⅓·⅔·끝)
+        function pickFour(items) { // 3장이면 가운데 장을 한 번 더 써서 칸을 채움
+            return [0, 1, 2, 3].map(k => items[Math.round(k * (items.length - 1) / 3)].url);
         }
 
         function clearPhotos() {
@@ -1574,7 +1680,7 @@
         // index부터 이어지는 사진(최대 4장)을 한 판으로. 영상을 만나면 거기서 끊고, 모자라면 앞쪽 사진을 빌려 칸을 채움(건너뛰는 수에는 안 셈)
         function boothGroup(index) {
             const urls = []; let i = index;
-            while (urls.length < 4 && i < mediaItems.length && mediaItems[i].type === 'image') { urls.push(mediaItems[i].url); i++; }
+            while (urls.length < 4 && i < mediaItems.length && mediaItems[i].type === 'image' && !(i > index && burstAt(i))) { urls.push(mediaItems[i].url); i++; } // 연속사진 묶음은 따로 한 판
             const step = Math.max(1, urls.length);
             const allImgs = mediaItems.filter(m => m.type === 'image').map(m => m.url);
             let k = 0;
@@ -1607,7 +1713,8 @@
             wrapper.className = 'slide-wrapper';
 
             const content = document.createElement('div');
-            const frame = resolveFrame(appSettings.frameStyle); // 셔플이면 장마다 다른 액자
+            const burst = burstAt(index); // 연속사진 묶음이면 무조건 네컷
+            const frame = burst ? 'frame-booth' : resolveFrame(appSettings.frameStyle); // 셔플이면 장마다 다른 액자
             lastShownFrame = frame;
             content.className = `slide-content ${frame}`;
             content.dataset.title = appSettings.title; // 액자에 제목 표시용
@@ -1629,7 +1736,13 @@
             }
             mediaEl.className = 'slide-img';
             boothStep = 1;
-            if (frame === 'frame-booth') {
+            if (burst) {
+                boothStep = burst.end - index + 1; // 묶음 나머지는 건너뜀
+                const urls = pickFour(burst.items);
+                buildBoothCard(content, urls.map(makeImg), boothTurn++, appSettings.title, todayStamp());
+                mediaEl = content.querySelector('.slide-img');
+            }
+            else if (frame === 'frame-booth') {
                 if (currentItem.type === 'image') {
                     const g = boothGroup(index);
                     boothStep = g.step;
@@ -1688,6 +1801,7 @@
             if (mediaItems.length === 0) return;
             const step = appSettings.frameStyle === 'frame-booth' ? 4 : 1; // 셔플은 한 장씩 뒤로
             currentIndex = currentIndex - step < 0 ? (currentIndex === 0 ? Math.max(0, mediaItems.length - step) : 0) : currentIndex - step;
+            const b = burstAt(currentIndex); if (b) currentIndex = b.start; // 연속사진 중간이면 묶음 처음으로
             showSlide(currentIndex); scheduleNext();
         }
 
