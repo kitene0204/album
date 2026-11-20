@@ -283,6 +283,17 @@
         }
         .frame-sticker .slide-img { border-radius: 16px; max-height: calc(86vh - 34px); }
 
+        /* 액자 미리보기 (설정 창 뒤) */
+        #frame-preview-stage { right: 0; }
+        #frame-preview-stage .slide-content { transform: scale(0.8); }
+        #frame-preview-stage .slide-img { max-width: 100%; }
+        #frame-preview-stage .frame-none .slide-img { width: auto; height: auto; max-height: 90vh; }
+        #settings-modal.previewing { background: rgba(0,0,0,0.06) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        @media (min-width: 1024px) {
+            #frame-preview-stage { right: 560px; }
+            #settings-modal.previewing { justify-content: flex-end; padding-right: 40px; }
+        }
+
         /* 전환 효과들 */
         .effect-fade { transform: scale(1); }
         .slide-wrapper.active .effect-fade { transform: scale(1.02); }
@@ -448,6 +459,12 @@
             </div>
         </div>
     </main>
+
+    <!-- 액자 고를 때 뒤에 보이는 미리보기 -->
+    <div id="frame-preview" class="hidden fixed inset-0 z-[99] pastel-bg opacity-0 transition-opacity duration-300">
+        <div id="frame-preview-stage" class="absolute top-0 bottom-0 left-0"></div>
+        <div id="frame-preview-label" class="absolute top-4 left-4 bg-white/80 backdrop-blur px-4 py-2 rounded-full text-slate-700 text-sm font-bold shadow"><i class="fas fa-eye mr-1 text-blue-500"></i> 미리보기</div>
+    </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="settings-modal-content">
@@ -662,19 +679,67 @@
         function openSettingsModal() {
             const modal = document.getElementById('settings-modal');
             const content = document.getElementById('settings-modal-content');
+            const preview = document.getElementById('frame-preview');
+            // 저장 안 하고 닫았던 선택은 되돌림
+            document.getElementById('setting-title').value = appSettings.title;
+            const r = document.querySelector(`input[name="frame-style"][value="${appSettings.frameStyle}"]`); if (r) r.checked = true;
+            renderFramePreview();
+            modal.classList.add('previewing');
+            preview.classList.remove('hidden');
             modal.classList.remove('hidden');
             requestAnimationFrame(() => {
                 modal.classList.remove('opacity-0');
+                preview.classList.remove('opacity-0');
                 content.classList.remove('scale-95');
             });
         }
         function closeSettingsModal() {
             const modal = document.getElementById('settings-modal');
             const content = document.getElementById('settings-modal-content');
+            const preview = document.getElementById('frame-preview');
             modal.classList.add('opacity-0');
+            preview.classList.add('opacity-0');
             content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            setTimeout(() => { modal.classList.add('hidden'); preview.classList.add('hidden'); modal.classList.remove('previewing'); document.getElementById('frame-preview-stage').innerHTML = ''; }, 300);
         }
+
+        // 미리보기용 예시 사진 (불러온 사진이 없을 때)
+        const SAMPLE_PHOTO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+                <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#d9f1ff"/></linearGradient></defs>
+                <rect width="1200" height="800" fill="url(#s)"/>
+                <circle cx="930" cy="190" r="90" fill="#ffd54f"/><circle cx="930" cy="190" r="125" fill="#ffd54f" opacity="0.25"/>
+                <g fill="#fff" opacity="0.9"><ellipse cx="260" cy="170" rx="110" ry="42"/><ellipse cx="330" cy="145" rx="80" ry="45"/><ellipse cx="620" cy="250" rx="90" ry="32"/></g>
+                <path d="M0 560 Q 250 430 520 540 T 1200 500 V800 H0Z" fill="#8bd17c"/>
+                <path d="M0 640 Q 350 560 700 650 T 1200 620 V800 H0Z" fill="#5fb85a"/>
+                <g transform="translate(470 470)"><rect width="260" height="170" fill="#ffb4a2"/><polygon points="-20,0 130,-90 280,0" fill="#e5707e"/><rect x="105" y="95" width="50" height="75" fill="#8d5b4c"/><rect x="30" y="40" width="50" height="40" fill="#fff"/><rect x="180" y="40" width="50" height="40" fill="#fff"/></g>
+            </svg>`);
+
+        function renderFramePreview() {
+            const stage = document.getElementById('frame-preview-stage');
+            if (!stage) return;
+            const style = (document.querySelector('input[name="frame-style"]:checked') || {}).value || 'frame-none';
+            const title = document.getElementById('setting-title').value.trim() || '오늘도 맑음, 6학년 1반';
+            const firstPhoto = mediaItems.find(m => m.type === 'image');
+            stage.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'slide-wrapper';
+            wrapper.style.transition = 'none';
+            const content = document.createElement('div');
+            content.className = `slide-content ${style}`;
+            content.dataset.title = title;
+            const img = document.createElement('img');
+            img.className = 'slide-img';
+            img.src = firstPhoto ? firstPhoto.url : SAMPLE_PHOTO;
+            if (style === 'frame-insta') buildFeedCard(content, img, 0, title); else content.appendChild(img);
+            wrapper.appendChild(content);
+            stage.appendChild(wrapper);
+            requestAnimationFrame(() => wrapper.classList.add('active'));
+        }
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('input[name="frame-style"]').forEach(r => r.addEventListener('change', renderFramePreview));
+            document.getElementById('setting-title').addEventListener('input', renderFramePreview);
+        });
 
         window.addEventListener('DOMContentLoaded', loadSettings);
 
@@ -1112,8 +1177,8 @@
         const feedCaptions = ['오늘도 맑음 ☀️', '우리 반 최고 💙', '이 순간 저장 📸', '추억 한 장 추가 ✨', '같이라서 좋은 날 🌈',
             '웃음 가득한 하루 😆', '잊지 말자 이 날 💫', '우리끼리 찰칵 🫶', '이 맛에 학교 오지 😎', '한 장 한 장이 보물 💎'];
         const feedTimes = ['방금 전', '1분 전', '5분 전', '1시간 전', '3시간 전', '어제', '2일 전', '1주 전'];
-        function buildFeedCard(content, mediaEl, index) {
-            const title = appSettings.title || '';
+        function buildFeedCard(content, mediaEl, index, titleOverride) {
+            const title = (titleOverride !== undefined ? titleOverride : appSettings.title) || '';
             const tags = title.split(/[,·]/).map(s => s.replace(/\s+/g, '')).filter(Boolean).map(s => '#' + s);
             tags.push('#추억', '#모먼트');
             const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
