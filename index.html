@@ -664,6 +664,10 @@
                 <h2 class="text-xl font-bold text-slate-700"><i class="fas fa-sliders-h mr-2 text-blue-500"></i>재생 설정</h2>
                 <button onclick="toggleSlidePanel(false)" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500"><i class="fas fa-times text-xl"></i></button>
             </div>
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-slate-700 mb-3">액자 디자인</h2>
+                <div id="panel-frames" class="grid grid-cols-3 gap-2"></div>
+            </div>
             <div id="play-options-panel"></div>
         </aside>
 
@@ -783,6 +787,41 @@
                 <path d="M0 640 Q 350 560 700 650 T 1200 620 V800 H0Z" fill="#5fb85a"/>
                 <g transform="translate(470 470)"><rect width="260" height="170" fill="#ffb4a2"/><polygon points="-20,0 130,-90 280,0" fill="#e5707e"/><rect x="105" y="95" width="50" height="75" fill="#8d5b4c"/><rect x="30" y="40" width="50" height="40" fill="#fff"/><rect x="180" y="40" width="50" height="40" fill="#fff"/></g>
             </svg>`);
+
+        /* 재생 중 설정 창의 액자 고르기 (설정 모달의 액자 목록을 그대로 가져와 작은 버튼으로) */
+        function renderPanelFrames() {
+            const box = document.getElementById('panel-frames');
+            if (!box) return;
+            box.innerHTML = '';
+            document.querySelectorAll('input[name="frame-style"]').forEach(radio => {
+                const card = radio.nextElementSibling;
+                const on = radio.value === appSettings.frameStyle;
+                const btn = document.createElement('button');
+                btn.className = `rounded-xl border-2 py-2 px-1 text-center transition ${on ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`;
+                const icon = card.querySelector('i').cloneNode(true);
+                icon.classList.remove('text-2xl', 'mb-2'); icon.classList.add('text-lg', 'block', 'mb-1');
+                btn.appendChild(icon);
+                const label = document.createElement('div');
+                label.className = 'text-xs font-bold text-slate-700 whitespace-nowrap';
+                label.textContent = card.querySelector('div').textContent;
+                btn.appendChild(label);
+                btn.onclick = () => setFrameStyle(radio.value);
+                box.appendChild(btn);
+            });
+        }
+        async function setFrameStyle(style) {
+            if (style === appSettings.frameStyle) return;
+            appSettings.frameStyle = style;
+            const r = document.querySelector(`input[name="frame-style"][value="${style}"]`); if (r) r.checked = true;
+            try { localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings)); } catch (e) {}
+            if (db) { try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch (e) {} }
+            renderPanelFrames();
+            // 지금 보이는 사진을 새 액자로 바로 다시 띄움 (넘김 타이머는 그대로)
+            if (!document.getElementById('slideshow-view').classList.contains('hidden') && mediaItems.length) {
+                showSlide(currentIndex);
+                if (mediaItems[currentIndex].type === 'video') scheduleNext(); // 새 영상 요소에 다시 연결
+            }
+        }
 
         function todayStamp() {
             const d = new Date();
@@ -1400,6 +1439,7 @@
             const panel = document.getElementById('slide-panel');
             const open = force === undefined ? !isPanelOpen() : force;
             panel.classList.toggle('hidden', !open);
+            if (open) renderPanelFrames();
             showControlsTemporary();
         }
 
