@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리반 추억 사진관</title>
+    <title>오늘도 맑음, 6학년 1반</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -147,6 +147,103 @@
             max-height: calc(90vh - 6vw); 
         }
 
+        /* 5. 마스킹 테이프 (스크랩북) */
+        .frame-tape {
+            position: relative;
+            background: #fffdf7;
+            padding: 1.2vw;
+            box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+            max-width: 88vw; max-height: 88vh;
+        }
+        .frame-tape::before, .frame-tape::after {
+            content: ''; position: absolute; top: -1.1vw;
+            width: 10vw; height: 2.6vw; min-width: 70px; min-height: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 6px, transparent 6px 12px);
+        }
+        .frame-tape::before { left: -2.5vw; transform: rotate(-32deg); background-color: rgba(255, 213, 79, 0.85); }
+        .frame-tape::after { right: -2.5vw; transform: rotate(32deg); background-color: rgba(129, 212, 250, 0.85); }
+        .frame-tape .slide-img { max-height: calc(88vh - 2.4vw); }
+
+        /* 6. 파스텔 구름 */
+        .frame-pastel {
+            padding: 1.4vw;
+            border-radius: 36px;
+            background: linear-gradient(135deg, #ffd1dc, #fff1b8, #c8f2d6, #c1e1ff, #e6d4ff);
+            background-size: 300% 300%;
+            animation: pastelGradient 10s ease infinite;
+            box-shadow: 0 18px 40px rgba(160, 140, 220, 0.45);
+            max-width: 88vw; max-height: 88vh;
+        }
+        .frame-pastel .slide-img { border-radius: 24px; max-height: calc(88vh - 2.8vw); }
+
+        /* 7. SNS 피드 */
+        .frame-insta {
+            position: relative;
+            background: #fff;
+            border-radius: 16px;
+            padding: 58px 12px 56px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            max-width: 88vw; max-height: 94vh;
+        }
+        .frame-insta::before {
+            content: '☀️  ' attr(data-title);
+            position: absolute; top: 16px; left: 18px; right: 18px;
+            font: 700 17px -apple-system, "Segoe UI", sans-serif; color: #262626;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .frame-insta::after {
+            content: '♥  💬  ➤';
+            position: absolute; bottom: 14px; left: 18px;
+            font: 24px -apple-system, "Segoe UI", sans-serif; color: #ed4956; letter-spacing: 4px;
+        }
+        .frame-insta .slide-img { border-radius: 4px; max-height: calc(94vh - 114px); }
+
+        /* 8. 교실 칠판 */
+        .frame-chalk {
+            position: relative;
+            background: #2f4f3a radial-gradient(circle at 30% 20%, rgba(255,255,255,0.07), transparent 60%);
+            border: 18px solid #8d6e63;
+            border-radius: 6px;
+            padding: 1.4vw 1.4vw 4.6vw;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.6), 0 18px 40px rgba(0,0,0,0.5);
+            max-width: 90vw; max-height: 90vh;
+        }
+        .frame-chalk::after {
+            content: attr(data-title);
+            position: absolute; left: 0; right: 0; bottom: 1.1vw; text-align: center;
+            font-family: 'BMJUA', sans-serif; font-size: 2.2vw; color: rgba(255,255,255,0.88);
+            text-shadow: 0 0 2px rgba(255,255,255,0.5);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2vw;
+        }
+        .frame-chalk .slide-img { max-height: calc(90vh - 36px - 6vw); }
+
+        /* 9. 네온 사인 */
+        .frame-neon {
+            padding: 10px;
+            border-radius: 20px;
+            border: 4px solid #ff4fd8;
+            background: rgba(20, 0, 40, 0.35);
+            animation: neonPulse 2.4s ease-in-out infinite;
+            max-width: 88vw; max-height: 88vh;
+        }
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 10px #ff4fd8, 0 0 28px #ff4fd8, 0 0 56px #7c4dff, inset 0 0 12px #ff4fd8; border-color: #ff4fd8; }
+            50% { box-shadow: 0 0 6px #4fe3ff, 0 0 20px #4fe3ff, 0 0 44px #7c4dff, inset 0 0 8px #4fe3ff; border-color: #4fe3ff; }
+        }
+        .frame-neon .slide-img { border-radius: 12px; max-height: calc(88vh - 28px); }
+
+        /* 10. 스티커 */
+        .frame-sticker {
+            background: #fff;
+            padding: 14px;
+            border-radius: 26px;
+            border: 3px dashed #ffb74d;
+            box-shadow: 0 0 0 10px #fff, 0 16px 34px rgba(0,0,0,0.35);
+            max-width: 86vw; max-height: 86vh;
+        }
+        .frame-sticker .slide-img { border-radius: 16px; max-height: calc(86vh - 34px); }
+
         /* 전환 효과들 */
         .effect-fade { transform: scale(1); }
         .slide-wrapper.active .effect-fade { transform: scale(1.02); }
@@ -182,7 +279,7 @@
                 <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
                 
                 <h1 id="main-title-display" class="text-3xl sm:text-4xl font-bold mb-3 relative z-10 drop-shadow-md">
-                    <i class="fas fa-camera-retro mr-3 text-blue-200"></i>우리반 추억 사진관
+                    <i class="fas fa-camera-retro mr-3 text-blue-200"></i>오늘도 맑음, 6학년 1반
                 </h1>
                 
                 <button onclick="openSettingsModal()" class="relative z-10 bg-white/20 hover:bg-white/40 text-white border border-white/30 px-4 py-2 rounded-full text-sm font-medium transition flex items-center backdrop-blur-sm mt-2">
@@ -319,16 +416,16 @@
                 <h2 class="text-2xl font-bold"><i class="fas fa-palette mr-2"></i>스타일 설정</h2>
                 <button onclick="closeSettingsModal()" class="text-white/70 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div class="p-8 space-y-6">
+            <div class="p-8 space-y-6 max-h-[65vh] overflow-y-auto">
                 <div>
                     <label class="block text-slate-700 font-bold mb-2 text-sm">슬라이드쇼 제목</label>
-                    <input type="text" id="setting-title" value="우리반 추억 사진관" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+                    <input type="text" id="setting-title" value="오늘도 맑음, 6학년 1반" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
                     <p class="text-xs text-slate-400 mt-1">이 제목은 메인 화면과 슬라이드쇼 시작 화면에 나타납니다.</p>
                 </div>
                 
                 <div>
                     <label class="block text-slate-700 font-bold mb-3 text-sm">액자(프레임) 디자인</label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-none" class="peer hidden" checked>
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
@@ -355,6 +452,48 @@
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-film text-2xl text-slate-400 mb-2"></i>
                                 <div class="font-bold text-slate-700 text-sm">영화 필름</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-tape" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-tape text-2xl text-amber-400 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">마스킹 테이프</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-pastel" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-cloud text-2xl text-sky-300 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">파스텔 구름</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-insta" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-heart text-2xl text-pink-400 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">SNS 피드</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-chalk" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-chalkboard text-2xl text-emerald-600 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">교실 칠판</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-neon" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-bolt text-2xl text-fuchsia-500 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">네온 사인</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-sticker" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-star text-2xl text-yellow-400 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">스티커</div>
                             </div>
                         </label>
                     </div>
@@ -448,25 +587,30 @@
             }
         } catch(e) {}
 
-        let appSettings = { title: "우리반 추억 사진관", frameStyle: "frame-none" };
+        let appSettings = { title: "오늘도 맑음, 6학년 1반", frameStyle: "frame-none" };
 
         async function loadSettings() {
             const localSet = localStorage.getItem('classPhotoSettings');
-            if (localSet) appSettings = JSON.parse(localSet);
+            try { if (localSet) appSettings = Object.assign({}, appSettings, JSON.parse(localSet)); } catch (e) {}
             if (db) {
                 try {
                     const doc = await db.collection("settings").doc("mainConfig").get();
                     if (doc.exists) appSettings = doc.data();
                 } catch(e) {}
             }
+            // 예전 기본 이름으로 저장돼 있으면 새 기본 이름으로 (선생님이 직접 바꾼 이름은 그대로)
+            if (!appSettings.title || appSettings.title === '우리반 추억 사진관') appSettings.title = '오늘도 맑음, 6학년 1반';
+            if (!document.querySelector(`input[name="frame-style"][value="${appSettings.frameStyle}"]`)) appSettings.frameStyle = 'frame-none';
+            document.title = appSettings.title;
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
             document.getElementById('setting-title').value = appSettings.title;
             document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
         }
 
         async function saveSettings() {
-            appSettings.title = document.getElementById('setting-title').value.trim() || "우리반 추억 사진관";
+            appSettings.title = document.getElementById('setting-title').value.trim() || "오늘도 맑음, 6학년 1반";
             appSettings.frameStyle = document.querySelector('input[name="frame-style"]:checked').value;
+            document.title = appSettings.title;
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
             localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings));
             if (db) {
@@ -932,6 +1076,7 @@
 
             const content = document.createElement('div');
             content.className = `slide-content ${appSettings.frameStyle}`;
+            content.dataset.title = appSettings.title; // SNS 피드·칠판 액자에 제목 표시
             content.classList.add(effects[Math.floor(Math.random() * effects.length)]);
 
             const currentItem = mediaItems[index];
