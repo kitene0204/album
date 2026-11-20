@@ -33,7 +33,8 @@
         #overlay-title-text { font-family: 'BMJUA', sans-serif; letter-spacing: 1px; }
 
         /* 입력창이나 버튼 안의 작은 글씨들은 가독성을 위해 시스템 기본 폰트 유지 */
-        input, .text-sm, .text-xs { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        /* 아이콘(<i>)은 제외해야 Font Awesome 아이콘이 네모로 깨지지 않음 */
+        input, .text-sm:not(i), .text-xs:not(i) { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
 
         /* 슬라이드쇼 부모 컨테이너 */
         #slideshow-container {
@@ -743,7 +744,9 @@
                 const row = document.createElement('div');
                 row.className = `flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm border ${cur ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200'}`;
                 const icon = cur && musicActive ? 'fa-volume-up text-blue-500' : (t.type === 'yt' ? 'fab fa-youtube text-red-500' : 'fa-music text-indigo-500');
+                row.draggable = true;
                 row.innerHTML = `
+                    <i class="fas fa-grip-vertical text-slate-300 w-3 text-center shrink-0 cursor-grab" title="끌어서 순서 바꾸기"></i>
                     <i class="${icon.startsWith('fab') ? icon : 'fas ' + icon} w-5 text-center shrink-0"></i>
                     <button class="flex-1 text-left truncate hover:text-blue-600 ${cur ? 'font-bold text-blue-700' : 'text-slate-700'}" data-act="play"></button>
                     <button class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0" data-act="up" title="위로"><i class="fas fa-chevron-up text-xs"></i></button>
@@ -756,15 +759,25 @@
                 row.querySelector('[data-act="up"]').onclick = () => moveTrack(i, -1);
                 row.querySelector('[data-act="down"]').onclick = () => moveTrack(i, 1);
                 row.querySelector('[data-act="del"]').onclick = () => removeTrack(i);
+                // 끌어다 놓아서 순서 바꾸기
+                row.addEventListener('dragstart', e => { dragFrom = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); row.classList.add('opacity-50'); });
+                row.addEventListener('dragend', () => { dragFrom = null; renderMusicList(); });
+                row.addEventListener('dragover', e => { if (dragFrom === null) return; e.preventDefault(); row.classList.add('ring-2', 'ring-blue-400'); });
+                row.addEventListener('dragleave', () => row.classList.remove('ring-2', 'ring-blue-400'));
+                row.addEventListener('drop', e => { e.preventDefault(); const from = dragFrom; dragFrom = null; if (from !== null) moveTrackTo(from, i); });
                 box.appendChild(row);
             });
         }
 
-        function moveTrack(i, dir) {
-            const j = i + dir;
-            if (j < 0 || j >= musicList.length) return;
-            [musicList[i], musicList[j]] = [musicList[j], musicList[i]];
-            if (musicIndex === i) musicIndex = j; else if (musicIndex === j) musicIndex = i;
+        let dragFrom = null;
+        function moveTrack(i, dir) { moveTrackTo(i, i + dir); }
+        // from 자리의 곡을 to 자리로 옮김 (지금 나오는 곡은 그대로 계속 재생)
+        function moveTrackTo(from, to) {
+            if (from === to || to < 0 || to >= musicList.length) { renderMusicList(); return; }
+            const playing = musicList[musicIndex];
+            const [t] = musicList.splice(from, 1);
+            musicList.splice(to, 0, t);
+            musicIndex = Math.max(0, musicList.indexOf(playing));
             savePlayback(); renderMusicList();
         }
 
