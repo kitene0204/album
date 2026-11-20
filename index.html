@@ -377,14 +377,28 @@
             max-width: 90vw; transform: rotate(-0.6deg);
             flex-direction: column; align-items: stretch;
         }
-        .frame-filmcam.tone-cool { --edge: #0a8f5b; --edge-text: #fff; --leak: rgba(60,220,170,0.38); --leak2: rgba(255,120,190,0.28); transform: rotate(0.6deg); }
+        .frame-filmcam.tone-green { --edge: #0a8f5b; --edge-text: #fff; --leak: rgba(60,220,170,0.38); --leak2: rgba(255,120,190,0.28); transform: rotate(0.6deg); }
         .fc-photo { position: relative; overflow: hidden; line-height: 0; }
         .fc-photo .slide-img { max-height: 66vh; max-width: 82vw; display: block;
             filter: sepia(0.2) saturate(1.3) contrast(1.06) brightness(1.04) hue-rotate(-8deg); }
-        .tone-cool .fc-photo .slide-img { filter: saturate(1.12) contrast(1.1) brightness(1.02) hue-rotate(8deg); }
+        .tone-green .fc-photo .slide-img { filter: saturate(1.12) contrast(1.1) brightness(1.02) hue-rotate(8deg); }
         .fc-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
             background: linear-gradient(160deg, rgba(255,190,90,0.45), rgba(200,80,40,0.25)); }
-        .tone-cool .fc-tint { background: linear-gradient(160deg, rgba(90,200,160,0.4), rgba(40,90,140,0.25)); }
+        .tone-green .fc-tint { background: linear-gradient(160deg, rgba(90,200,160,0.4), rgba(40,90,140,0.25)); }
+        /* 소프트 파스텔: 부드러운 대비, 복숭앗빛 */
+        .frame-filmcam.tone-soft { --edge: #f6c9b0; --edge-text: #8a4b2a; --leak: rgba(255,170,150,0.4); --leak2: rgba(255,230,180,0.35); transform: rotate(-0.3deg); }
+        .tone-soft .fc-photo .slide-img { filter: contrast(0.88) saturate(0.95) brightness(1.1) sepia(0.12); }
+        .tone-soft .fc-tint { background: linear-gradient(160deg, rgba(255,210,190,0.5), rgba(255,240,220,0.3)); }
+        /* 시네마 나이트: 푸른 그림자 + 붉은 번짐 */
+        .frame-filmcam.tone-cine { --edge: #1f1f1f; --edge-text: #ff5a45; --leak: rgba(255,60,40,0.45); --leak2: rgba(255,120,60,0.3); background: #ece8e0; transform: rotate(0.4deg); }
+        .tone-cine .fc-photo .slide-img { filter: contrast(1.2) saturate(1.1) brightness(0.9) hue-rotate(-6deg); }
+        .tone-cine .fc-tint { mix-blend-mode: color; opacity: 0.35; background: linear-gradient(160deg, #1e5aa8, #2a7fa0 60%, #c0503a); }
+        .tone-cine .fc-vignette { box-shadow: inset 0 0 12vh rgba(0,10,40,0.6); }
+        /* 클래식 흑백 */
+        .frame-filmcam.tone-mono { --edge: #2b2b2b; --edge-text: #eee; --leak: rgba(255,255,255,0.25); --leak2: rgba(255,255,255,0.15); background: #f3f3f0; transform: rotate(-0.5deg); }
+        .tone-mono .fc-photo .slide-img { filter: grayscale(1) contrast(1.15) brightness(1.06); }
+        .tone-mono .fc-tint { display: none; }
+        .tone-mono .fc-date { color: #ffb36b; }
         .fc-leak { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
             background: radial-gradient(ellipse 45% 70% at 0% 25%, var(--leak), transparent 70%),
                         radial-gradient(ellipse 30% 40% at 100% 100%, var(--leak2), transparent 70%);
@@ -742,6 +756,10 @@
                             </div>
                         </label>
                     </div>
+                    <div id="film-choices-box" class="hidden mt-4 p-3 rounded-xl bg-amber-50 border border-amber-100">
+                        <div class="font-bold text-slate-700 text-sm mb-2">🎞️ 필름 고르기</div>
+                        <div id="film-choices" class="grid grid-cols-3 gap-2"></div>
+                    </div>
                     <label class="mt-4 flex items-start gap-3 p-3 rounded-xl bg-pink-50 border border-pink-100 cursor-pointer">
                         <input type="checkbox" id="setting-burst-booth" class="mt-1 w-4 h-4 accent-pink-500" checked onchange="setBurstBooth(this.checked)">
                         <span>
@@ -796,6 +814,10 @@
                 <div id="panel-fonts" class="grid grid-cols-3 gap-2 mb-6"></div>
                 <h2 class="text-xl font-bold text-slate-700 mb-3">액자 디자인</h2>
                 <div id="panel-frames" class="grid grid-cols-3 gap-2"></div>
+                <div id="panel-films-box" class="hidden mt-4">
+                    <h3 class="font-bold text-slate-700 mb-2">🎞️ 필름 고르기</h3>
+                    <div id="panel-films" class="grid grid-cols-3 gap-2"></div>
+                </div>
             </div>
             <div id="play-options-panel"></div>
         </aside>
@@ -865,6 +887,7 @@
             document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
             document.getElementById('setting-burst-booth').checked = appSettings.burstBooth !== false;
             applyShowFont();
+            updateFilmBoxes();
         }
         async function setBurstBooth(on) {
             appSettings.burstBooth = !!on;
@@ -945,6 +968,7 @@
             document.getElementById('setting-title').value = appSettings.title;
             const r = document.querySelector(`input[name="frame-style"][value="${appSettings.frameStyle}"]`); if (r) r.checked = true;
             renderFramePreview();
+            updateFilmBoxes();
             modal.classList.add('previewing');
             preview.classList.remove('hidden');
             modal.classList.remove('hidden');
@@ -996,6 +1020,7 @@
                 btn.onclick = () => { setFrameStyle(radio.value); toggleSlidePanel(false); }; // 고르면 설정 창 닫고 바로 감상
                 box.appendChild(btn);
             });
+            updateFilmBoxes();
         }
         async function setFrameStyle(style) {
             if (style === appSettings.frameStyle) return;
@@ -1004,6 +1029,7 @@
             try { localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings)); } catch (e) {}
             if (db) { try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch (e) {} }
             renderPanelFrames();
+            updateFilmBoxes();
             // 지금 보이는 사진을 새 액자로 바로 다시 띄움 (넘김 타이머는 그대로)
             if (!document.getElementById('slideshow-view').classList.contains('hidden') && mediaItems.length) {
                 showSlide(currentIndex);
@@ -1053,7 +1079,7 @@
             requestAnimationFrame(() => wrapper.classList.add('active'));
         }
         window.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('input[name="frame-style"]').forEach(r => r.addEventListener('change', renderFramePreview));
+            document.querySelectorAll('input[name="frame-style"]').forEach(r => r.addEventListener('change', () => { renderFramePreview(); updateFilmBoxes(); }));
             document.getElementById('setting-title').addEventListener('input', renderFramePreview);
         });
 
@@ -1694,10 +1720,58 @@
         }
 
         /* ---------- 필름 카메라: 인화지 테두리 + 필름 색감·빛샘·입자 + 주황 날짜 + 필름 가장자리 띠 ---------- */
+        const FILMS = [
+            { key: 'gold',  name: '골드',      sub: '따뜻한 노란빛', label: 'GOLD 200',  sw: ['#ffb703', '#c1121f'] },
+            { key: 'green', name: '그린',      sub: '맑은 초록빛',   label: 'VIVID 400', sw: ['#0a8f5b', '#9be7c4'] },
+            { key: 'soft',  name: '소프트',    sub: '뽀얀 파스텔',   label: 'SOFT 160',  sw: ['#f6c9b0', '#fff1e6'] },
+            { key: 'cine',  name: '시네마',    sub: '밤 감성',       label: 'CINE 800T', sw: ['#1f1f1f', '#ff5a45'] },
+            { key: 'mono',  name: '흑백',      sub: '클래식',        label: 'B&W 400',   sw: ['#2b2b2b', '#e9e9e9'] }
+        ];
+        const FILM_MIX = ['gold', 'green', 'soft', 'cine']; // '번갈아'일 때 돌아가는 필름 (흑백 제외)
+        function filmFor(index) {
+            const k = appSettings.filmKey || 'mix';
+            const key = k === 'mix' ? FILM_MIX[index % FILM_MIX.length] : k;
+            return FILMS.find(f => f.key === key) || FILMS[0];
+        }
+        function renderFilmChoices(boxId) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+            box.innerHTML = '';
+            const cur = appSettings.filmKey || 'mix';
+            [{ key: 'mix', name: '번갈아', sub: '필름 4종 섞기', sw: ['#ffb703', '#0a8f5b'] }, ...FILMS].forEach(f => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `rounded-xl border-2 p-2 text-center transition ${f.key === cur ? 'border-amber-500 bg-white' : 'border-slate-200 bg-white hover:bg-slate-50'}`;
+                const sw = document.createElement('div');
+                sw.style.cssText = `height:18px;border-radius:6px;margin-bottom:4px;background:linear-gradient(90deg,${f.sw[0]} 0 55%,${f.sw[1]} 55%)`;
+                const n = document.createElement('div'); n.className = 'text-sm font-bold text-slate-700 whitespace-nowrap'; n.textContent = f.name;
+                const s = document.createElement('div'); s.className = 'text-xs text-slate-500 whitespace-nowrap'; s.textContent = f.sub;
+                btn.append(sw, n, s);
+                btn.onclick = () => setFilm(f.key, boxId === 'panel-films');
+                box.appendChild(btn);
+            });
+        }
+        function updateFilmBoxes() {
+            const picked = (document.querySelector('input[name="frame-style"]:checked') || {}).value;
+            document.getElementById('film-choices-box').classList.toggle('hidden', picked !== 'frame-filmcam');
+            document.getElementById('panel-films-box').classList.toggle('hidden', appSettings.frameStyle !== 'frame-filmcam');
+            renderFilmChoices('film-choices'); renderFilmChoices('panel-films');
+        }
+        async function setFilm(key, fromPanel) {
+            appSettings.filmKey = key;
+            try { localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings)); } catch (e) {}
+            if (db) { try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch (e) {} }
+            updateFilmBoxes();
+            if (fromPanel) {
+                toggleSlidePanel(false);
+                if (mediaItems.length) showSlide(currentIndex); // 지금 사진을 새 필름으로 바로
+            } else renderFramePreview();
+        }
+
         function buildFilmCamCard(content, mediaEl, index, titleOverride) {
             const title = (titleOverride !== undefined ? titleOverride : appSettings.title) || '';
-            const cool = index % 2 === 1; // 따뜻한 골드 ↔ 맑은 그린 번갈아
-            content.classList.add(cool ? 'tone-cool' : 'tone-warm');
+            const film = filmFor(index);
+            content.classList.add('tone-' + film.key);
             const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
             const photo = el('div', 'fc-photo');
             photo.appendChild(mediaEl);
@@ -1708,7 +1782,7 @@
             const edge = el('div', 'fc-edge');
             edge.appendChild(el('span', '', `▸ ${n}A`));
             edge.appendChild(el('span', 'fc-brand', title));
-            edge.appendChild(el('span', '', cool ? 'VIVID 400' : 'GOLD 200'));
+            edge.appendChild(el('span', '', film.label));
             content.appendChild(photo); content.appendChild(edge);
         }
 
