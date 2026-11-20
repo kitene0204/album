@@ -369,6 +369,38 @@
         .booth-title .deco { font-size: 2.4vh; margin: 0 1vh; opacity: 0.85; }
         .booth-date { font: 600 1.6vh 'Courier New', monospace; letter-spacing: 0.5vh; opacity: 0.75; }
 
+        /* 13. 필름 카메라 (따뜻한 골드 필름 ↔ 맑은 그린 필름 번갈아) */
+        .frame-filmcam {
+            --edge: #ffb703; --edge-text: #c1121f; --leak: rgba(255,110,40,0.55); --leak2: rgba(255,200,80,0.35);
+            background: #f6f1e7; padding: 2.2vh 2.2vh 0; border-radius: 3px;
+            box-shadow: 0 20px 46px rgba(0,0,0,0.45), 0 2px 0 rgba(0,0,0,0.05);
+            max-width: 90vw; transform: rotate(-0.6deg);
+            flex-direction: column; align-items: stretch;
+        }
+        .frame-filmcam.tone-cool { --edge: #0a8f5b; --edge-text: #fff; --leak: rgba(60,220,170,0.38); --leak2: rgba(255,120,190,0.28); transform: rotate(0.6deg); }
+        .fc-photo { position: relative; overflow: hidden; line-height: 0; }
+        .fc-photo .slide-img { max-height: 66vh; max-width: 82vw; display: block;
+            filter: sepia(0.2) saturate(1.3) contrast(1.06) brightness(1.04) hue-rotate(-8deg); }
+        .tone-cool .fc-photo .slide-img { filter: saturate(1.12) contrast(1.1) brightness(1.02) hue-rotate(8deg); }
+        .fc-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
+            background: linear-gradient(160deg, rgba(255,190,90,0.45), rgba(200,80,40,0.25)); }
+        .tone-cool .fc-tint { background: linear-gradient(160deg, rgba(90,200,160,0.4), rgba(40,90,140,0.25)); }
+        .fc-leak { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+            background: radial-gradient(ellipse 45% 70% at 0% 25%, var(--leak), transparent 70%),
+                        radial-gradient(ellipse 30% 40% at 100% 100%, var(--leak2), transparent 70%);
+            animation: fcLeak 5s ease-in-out infinite alternate; }
+        @keyframes fcLeak { from { opacity: 0.55; } to { opacity: 1; } }
+        .fc-grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.22; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        .fc-vignette { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 9vh rgba(40,20,0,0.45); }
+        .fc-date { position: absolute; right: 4%; bottom: 5%; color: #ff8c1a; line-height: 1;
+            font: 700 3.2vh 'Courier New', monospace; letter-spacing: 0.35vh;
+            text-shadow: 0 0 4px rgba(255,120,0,0.9), 0 0 12px rgba(255,90,0,0.6); opacity: 0.92; }
+        .fc-edge { display: flex; align-items: center; justify-content: space-between; gap: 2vh;
+            margin: 1.6vh -2.2vh 0; padding: 1vh 2.4vh; background: var(--edge); color: var(--edge-text);
+            font: 800 1.9vh 'Courier New', monospace; letter-spacing: 0.4vh; }
+        .fc-edge .fc-brand { font-family: var(--show-font); letter-spacing: 0.1vh; font-weight: 400; font-size: 2.3vh; }
+
         /* 12. 레트로 캠코더 (뷰파인더 화면) */
         .frame-camcorder {
             position: relative;
@@ -700,6 +732,13 @@
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-video text-2xl text-red-500 mb-2"></i>
                                 <div class="font-bold text-slate-700 text-sm">레트로 캠코더</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-filmcam" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-camera text-2xl text-amber-500 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">필름 카메라</div>
                             </div>
                         </label>
                     </div>
@@ -1654,7 +1693,27 @@
             setTimeout(() => { likeBtn.classList.add('on'); likeBtn.querySelector('i').classList.replace('far', 'fas'); cnt.textContent = `우리 반 친구들 외 ${likes + 1}명`; }, 1400);
         }
 
+        /* ---------- 필름 카메라: 인화지 테두리 + 필름 색감·빛샘·입자 + 주황 날짜 + 필름 가장자리 띠 ---------- */
+        function buildFilmCamCard(content, mediaEl, index, titleOverride) {
+            const title = (titleOverride !== undefined ? titleOverride : appSettings.title) || '';
+            const cool = index % 2 === 1; // 따뜻한 골드 ↔ 맑은 그린 번갈아
+            content.classList.add(cool ? 'tone-cool' : 'tone-warm');
+            const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+            const photo = el('div', 'fc-photo');
+            photo.appendChild(mediaEl);
+            ['fc-tint', 'fc-leak', 'fc-grain', 'fc-vignette'].forEach(c => photo.appendChild(el('div', c)));
+            const d = new Date();
+            photo.appendChild(el('div', 'fc-date', `'${String(d.getFullYear()).slice(2)} ${d.getMonth() + 1} ${d.getDate()}`));
+            const n = (index % 36) + 1;
+            const edge = el('div', 'fc-edge');
+            edge.appendChild(el('span', '', `▸ ${n}A`));
+            edge.appendChild(el('span', 'fc-brand', title));
+            edge.appendChild(el('span', '', cool ? 'VIVID 400' : 'GOLD 200'));
+            content.appendChild(photo); content.appendChild(edge);
+        }
+
         const SOCIAL_FRAMES = {
+            'frame-filmcam': buildFilmCamCard,
             'frame-insta': (c, m, i, t) => buildFeedCard(c, m, i, t),
             'frame-threads': buildThreadsCard,
             'frame-fb': buildFbCard
