@@ -863,8 +863,12 @@
                 const sample = document.createElement('div');
                 sample.style.fontFamily = f.css;
                 sample.className = 'text-slate-800';
-                sample.style.fontSize = '20px';
+                btn.style.containerType = 'inline-size'; // 버튼 너비에 맞춰 글자 크기를 줄여 한 줄로
+                btn.style.minWidth = '0';
+                sample.style.fontSize = 'clamp(11px, 14cqi, 20px)';
                 sample.style.lineHeight = '1.3';
+                sample.style.whiteSpace = 'nowrap';
+                sample.style.overflow = 'hidden';
                 sample.textContent = '오늘도 맑음';
                 const label = document.createElement('div');
                 label.className = 'text-xs text-slate-500 mt-0.5';
