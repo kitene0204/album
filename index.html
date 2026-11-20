@@ -330,7 +330,7 @@
         /* 11. 네컷 사진관 (사진관 스티커 사진 느낌) */
         /* 사진 4장을 2×2로 붙인 판 + 아래 반 이름·날짜. 판 색은 장마다 바뀜 (--bc 판 색, --bt 글자 색) */
         .frame-booth {
-            --bc: #111; --bt: #fff;
+            --bc: #ffd6e0; --bt: #c2255c;
             flex-direction: column;
             align-items: stretch !important;
             background: var(--bc);
@@ -1459,7 +1459,7 @@
         };
 
         /* ---------- 네컷 사진관: 사진 4장을 한 판에 ---------- */
-        const boothColors = [['#111111', '#ffffff'], ['#ffffff', '#222222'], ['#ffd6e0', '#c2255c'], ['#d0ebff', '#1864ab'], ['#e5dbff', '#5f3dc4'], ['#fff3bf', '#e67700']];
+        const boothColors = [['#ffd6e0', '#c2255c'], ['#d0ebff', '#1864ab'], ['#e5dbff', '#5f3dc4'], ['#fff3bf', '#e67700'], ['#d3f9d8', '#2b8a3e'], ['#ffe8cc', '#d9480f']];
         const boothDecos = [['✦', '✦'], ['♡', '♡'], ['☀︎', '☀︎'], ['★', '★'], ['✿', '✿']];
         let boothStep = 1; // 지금 판에 쓴 사진 수 (다음 판은 그만큼 건너뜀)
         let boothTurn = 0; // 판마다 색이 바뀌도록 세는 수
