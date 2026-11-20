@@ -619,6 +619,13 @@
                             </div>
                         </label>
                         <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-shuffle" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-shuffle text-2xl text-violet-500 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">셔플 (번갈아)</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-polaroid" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
                                 <i class="fas fa-sticky-note text-2xl text-slate-400 mb-2"></i>
@@ -930,7 +937,7 @@
                 label.className = 'text-xs font-bold text-slate-700 whitespace-nowrap';
                 label.textContent = card.querySelector('div').textContent;
                 btn.appendChild(label);
-                btn.onclick = () => setFrameStyle(radio.value);
+                btn.onclick = () => { setFrameStyle(radio.value); toggleSlidePanel(false); }; // 고르면 설정 창 닫고 바로 감상
                 box.appendChild(btn);
             });
         }
@@ -953,10 +960,18 @@
             return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
         }
 
+        let previewShuffleTimer = null;
         function renderFramePreview() {
             const stage = document.getElementById('frame-preview-stage');
             if (!stage) return;
-            const style = (document.querySelector('input[name="frame-style"]:checked') || {}).value || 'frame-none';
+            const picked = (document.querySelector('input[name="frame-style"]:checked') || {}).value || 'frame-none';
+            // 셔플을 고르면 미리보기도 2초마다 다른 액자로 바뀌며 보여줌
+            clearTimeout(previewShuffleTimer);
+            if (picked === 'frame-shuffle') previewShuffleTimer = setTimeout(() => {
+                const settingsOpen = !document.getElementById('settings-modal').classList.contains('hidden') && !document.getElementById('settings-modal').classList.contains('opacity-0');
+                if (settingsOpen) renderFramePreview();
+            }, 2000);
+            const style = resolveFrame(picked);
             const title = document.getElementById('setting-title').value.trim() || '오늘도 맑음, 6학년 1반';
             const photos = mediaItems.filter(m => m.type === 'image').map(m => m.url);
             const firstPhoto = photos.length ? { url: photos[0] } : null;
@@ -1535,6 +1550,21 @@
             'frame-fb': buildFbCard
         };
 
+        /* ---------- 셔플: 모든 액자를 섞어서 한 번씩 돌아가며 (같은 액자 연속 없음) ---------- */
+        let shuffleBag = []; let lastShownFrame = '';
+        function allRealFrames() {
+            return [...document.querySelectorAll('input[name="frame-style"]')].map(r => r.value).filter(v => v !== 'frame-none' && v !== 'frame-shuffle');
+        }
+        function resolveFrame(style) {
+            if (style !== 'frame-shuffle') return style;
+            if (!shuffleBag.length) {
+                shuffleBag = allRealFrames();
+                for (let i = shuffleBag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffleBag[i], shuffleBag[j]] = [shuffleBag[j], shuffleBag[i]]; }
+                if (shuffleBag.length > 1 && shuffleBag[shuffleBag.length - 1] === lastShownFrame) [shuffleBag[0], shuffleBag[shuffleBag.length - 1]] = [shuffleBag[shuffleBag.length - 1], shuffleBag[0]];
+            }
+            return shuffleBag.pop();
+        }
+
         /* ---------- 네컷 사진관: 사진 4장을 한 판에 ---------- */
         const boothColors = [['#ffd6e0', '#c2255c'], ['#d0ebff', '#1864ab'], ['#e5dbff', '#5f3dc4'], ['#fff3bf', '#e67700'], ['#d3f9d8', '#2b8a3e'], ['#ffe8cc', '#d9480f']];
         const boothDecos = [['✦', '✦'], ['♡', '♡'], ['☀︎', '☀︎'], ['★', '★'], ['✿', '✿']];
@@ -1577,7 +1607,9 @@
             wrapper.className = 'slide-wrapper';
 
             const content = document.createElement('div');
-            content.className = `slide-content ${appSettings.frameStyle}`;
+            const frame = resolveFrame(appSettings.frameStyle); // 셔플이면 장마다 다른 액자
+            lastShownFrame = frame;
+            content.className = `slide-content ${frame}`;
             content.dataset.title = appSettings.title; // 액자에 제목 표시용
             content.dataset.date = todayStamp();       // 네컷·캠코더 액자에 날짜 표시
             content.classList.add(effects[Math.floor(Math.random() * effects.length)]);
@@ -1597,7 +1629,7 @@
             }
             mediaEl.className = 'slide-img';
             boothStep = 1;
-            if (appSettings.frameStyle === 'frame-booth') {
+            if (frame === 'frame-booth') {
                 if (currentItem.type === 'image') {
                     const g = boothGroup(index);
                     boothStep = g.step;
@@ -1605,7 +1637,7 @@
                     buildBoothCard(content, imgs, boothTurn++, appSettings.title, todayStamp());
                 } else buildBoothCard(content, [mediaEl], boothTurn++, appSettings.title, todayStamp());
             }
-            else if (SOCIAL_FRAMES[appSettings.frameStyle]) SOCIAL_FRAMES[appSettings.frameStyle](content, mediaEl, index);
+            else if (SOCIAL_FRAMES[frame]) SOCIAL_FRAMES[frame](content, mediaEl, index);
             else content.appendChild(mediaEl);
             wrapper.appendChild(content);
             const container = document.getElementById('slideshow-container');
@@ -1654,7 +1686,7 @@
         }
         function prevSlide() {
             if (mediaItems.length === 0) return;
-            const step = appSettings.frameStyle === 'frame-booth' ? 4 : 1;
+            const step = appSettings.frameStyle === 'frame-booth' ? 4 : 1; // 셔플은 한 장씩 뒤로
             currentIndex = currentIndex - step < 0 ? (currentIndex === 0 ? Math.max(0, mediaItems.length - step) : 0) : currentIndex - step;
             showSlide(currentIndex); scheduleNext();
         }
