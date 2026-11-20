@@ -178,26 +178,65 @@
         .frame-pastel .slide-img { border-radius: 24px; max-height: calc(88vh - 2.8vw); }
 
         /* 7. SNS 피드 */
+        /* 화면 높이에 맞춰 커지도록 --u(기본 글자 크기) 기준으로 크기를 잡음 */
         .frame-insta {
-            position: relative;
+            --u: 1.9vh;
+            flex-direction: column;
+            align-items: stretch !important;
             background: #fff;
-            border-radius: 16px;
-            padding: 58px 12px 56px;
-            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-            max-width: 88vw; max-height: 94vh;
+            border: 1px solid #dbdbdb;
+            border-radius: calc(var(--u) * 0.9);
+            overflow: hidden;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.30);
+            min-width: 46vh;
+            max-width: 88vw; max-height: 96vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+            color: #262626;
         }
-        .frame-insta::before {
-            content: '☀️  ' attr(data-title);
-            position: absolute; top: 16px; left: 18px; right: 18px;
-            font: 700 17px -apple-system, "Segoe UI", sans-serif; color: #262626;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        .ig-head { height: 7vh; display: flex; align-items: center; gap: calc(var(--u) * 0.7); padding: 0 calc(var(--u) * 0.9); }
+        .ig-avatar {
+            width: 4.6vh; height: 4.6vh; border-radius: 50%; flex-shrink: 0; padding: 0.3vh;
+            background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
         }
-        .frame-insta::after {
-            content: '♥  💬  ➤';
-            position: absolute; bottom: 14px; left: 18px;
-            font: 24px -apple-system, "Segoe UI", sans-serif; color: #ed4956; letter-spacing: 4px;
+        .ig-avatar span {
+            width: 100%; height: 100%; border-radius: 50%; border: 0.3vh solid #fff; background: #fff3c4;
+            display: flex; align-items: center; justify-content: center; font-size: 2.2vh; line-height: 1;
         }
-        .frame-insta .slide-img { border-radius: 4px; max-height: calc(94vh - 114px); }
+        .ig-who { flex: 1; min-width: 0; line-height: 1.25; }
+        .ig-name { font-weight: 700; font-size: var(--u); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ig-name i { color: #0095f6; font-size: calc(var(--u) * 0.85); margin-left: 0.3em; }
+        .ig-place { font-size: calc(var(--u) * 0.8); color: #737373; }
+        .ig-more { font-size: calc(var(--u) * 1.3); color: #262626; letter-spacing: 1px; }
+        .ig-media { position: relative; background: #efefef; display: flex; align-items: center; justify-content: center; }
+        .frame-insta .slide-img { max-height: calc(96vh - 7vh - 19vh); width: auto; max-width: 100%; display: block; }
+        .ig-pop {
+            position: absolute; left: 50%; top: 50%; font-size: 14vh; color: #fff;
+            filter: drop-shadow(0 4px 14px rgba(0,0,0,0.35));
+            transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none;
+        }
+        .slide-wrapper.active .ig-pop { animation: igPop 1.1s ease-out 1.2s forwards; }
+        @keyframes igPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            30% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+            75% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -60%) scale(0.6); opacity: 0; }
+        }
+        .ig-foot { height: 19vh; padding: calc(var(--u) * 0.5) calc(var(--u) * 0.9) 0; width: 0; min-width: 100%; box-sizing: border-box; overflow: hidden; }
+        .ig-actions { display: flex; align-items: center; gap: calc(var(--u) * 1.1); font-size: calc(var(--u) * 1.55); height: 5vh; }
+        .ig-actions .ig-save { margin-left: auto; }
+        .ig-like { color: #262626; }
+        .slide-wrapper.active .ig-like { animation: igLike 0.45s ease-out 1.3s forwards; }
+        @keyframes igLike {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); color: #ff3040; }
+            100% { transform: scale(1); color: #ff3040; }
+        }
+        .ig-likes { font-weight: 700; font-size: var(--u); margin-top: 0.3vh; }
+        .ig-caption { font-size: var(--u); line-height: 1.4; margin-top: 0.4vh; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ig-caption b { font-weight: 700; margin-right: 0.35em; }
+        .ig-caption .ig-tag { color: #00376b; }
+        .ig-time { font-size: calc(var(--u) * 0.72); color: #737373; margin-top: 0.6vh; letter-spacing: 0.3px; }
 
         /* 8. 교실 칠판 */
         .frame-chalk {
@@ -1069,6 +1108,49 @@
             updatePlayPauseIcon();
         }
 
+        /* SNS 피드 카드: 프로필 머리 + 사진 + 하트·댓글·공유·저장 + 좋아요·글·해시태그 */
+        const feedCaptions = ['오늘도 맑음 ☀️', '우리 반 최고 💙', '이 순간 저장 📸', '추억 한 장 추가 ✨', '같이라서 좋은 날 🌈',
+            '웃음 가득한 하루 😆', '잊지 말자 이 날 💫', '우리끼리 찰칵 🫶', '이 맛에 학교 오지 😎', '한 장 한 장이 보물 💎'];
+        const feedTimes = ['방금 전', '1분 전', '5분 전', '1시간 전', '3시간 전', '어제', '2일 전', '1주 전'];
+        function buildFeedCard(content, mediaEl, index) {
+            const title = appSettings.title || '';
+            const tags = title.split(/[,·]/).map(s => s.replace(/\s+/g, '')).filter(Boolean).map(s => '#' + s);
+            tags.push('#추억', '#모먼트');
+            const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+            const head = el('div', 'ig-head');
+            const av = el('div', 'ig-avatar'); av.appendChild(el('span', '', '☀️'));
+            const who = el('div', 'ig-who');
+            const name = el('div', 'ig-name', title); name.appendChild(el('i', 'fas fa-circle-check'));
+            who.appendChild(name); who.appendChild(el('div', 'ig-place', '우리 교실'));
+            head.appendChild(av); head.appendChild(who); head.appendChild(el('div', 'ig-more', '···'));
+
+            const media = el('div', 'ig-media');
+            media.appendChild(mediaEl);
+            media.appendChild(el('i', 'fas fa-heart ig-pop'));
+
+            const foot = el('div', 'ig-foot');
+            const acts = el('div', 'ig-actions');
+            const like = el('i', 'far fa-heart ig-like');
+            acts.appendChild(like);
+            acts.appendChild(el('i', 'far fa-comment'));
+            acts.appendChild(el('i', 'far fa-paper-plane'));
+            acts.appendChild(el('i', 'far fa-bookmark ig-save'));
+            const likes = 18 + ((index * 7 + 3) % 15);
+            const cap = el('div', 'ig-caption');
+            cap.appendChild(el('b', '', title));
+            cap.appendChild(document.createTextNode(feedCaptions[index % feedCaptions.length] + ' '));
+            cap.appendChild(el('span', 'ig-tag', tags.join(' ')));
+            foot.appendChild(acts);
+            foot.appendChild(el('div', 'ig-likes', `좋아요 ${likes}개`));
+            foot.appendChild(cap);
+            foot.appendChild(el('div', 'ig-time', feedTimes[index % feedTimes.length]));
+
+            content.appendChild(head); content.appendChild(media); content.appendChild(foot);
+            // 사진 위 큰 하트가 뜰 때 아래 하트도 빨갛게 채워짐
+            setTimeout(() => { like.classList.replace('far', 'fas'); likes && foot.querySelector('.ig-likes') && (foot.querySelector('.ig-likes').textContent = `좋아요 ${likes + 1}개`); }, 1400);
+        }
+
         function showSlide(index) {
             if (currentMediaEl && currentMediaEl.tagName === 'VIDEO') { currentMediaEl.onended = null; currentMediaEl.onerror = null; }
             const wrapper = document.createElement('div');
@@ -1093,7 +1175,8 @@
                 mediaEl.src = currentItem.url;
             }
             mediaEl.className = 'slide-img';
-            content.appendChild(mediaEl);
+            if (appSettings.frameStyle === 'frame-insta') buildFeedCard(content, mediaEl, index);
+            else content.appendChild(mediaEl);
             wrapper.appendChild(content);
             const container = document.getElementById('slideshow-container');
             container.appendChild(wrapper);
