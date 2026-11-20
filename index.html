@@ -6,7 +6,7 @@
     <title>오늘도 맑음, 6학년 1반</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -195,8 +195,17 @@
         .ig-name i { color: #0095f6; font-size: calc(var(--u) * 0.85); margin-left: 0.3em; }
         .ig-place { font-size: calc(var(--u) * 0.8); color: #737373; }
         .ig-more { font-size: calc(var(--u) * 1.3); color: #262626; letter-spacing: 1px; }
+        /* SNS 로고 테마색 */
+        .ig-grad {
+            background: linear-gradient(45deg, #feda75 5%, #fa7e1e 25%, #d62976 50%, #962fbf 75%, #4f5bd5 95%);
+            -webkit-background-clip: text; background-clip: text; color: transparent !important;
+        }
+        .fb-blue { color: #0866ff !important; }
+        .ig-logo { font-size: calc(var(--u) * 1.7); margin-left: calc(var(--u) * 0.4); }
+        .sns-bar { height: 0.6vh; flex-shrink: 0; }
+        .ig-bar { background: linear-gradient(90deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5); }
         .ig-media { position: relative; background: #efefef; display: flex; align-items: center; justify-content: center; }
-        .frame-insta .slide-img { max-height: calc(96vh - 7vh - 19vh); width: auto; max-width: 100%; display: block; }
+        .frame-insta .slide-img { max-height: calc(96vh - 7vh - 19vh - 2vh);width: auto; max-width: 100%; display: block; }
         .ig-pop {
             position: absolute; left: 50%; top: 50%; font-size: 14vh; color: #fff;
             filter: drop-shadow(0 4px 14px rgba(0,0,0,0.35));
@@ -225,25 +234,6 @@
         .ig-caption b { font-weight: 700; margin-right: 0.35em; }
         .ig-caption .ig-tag { color: #00376b; }
         .ig-time { font-size: calc(var(--u) * 0.72); color: #737373; margin-top: 0.6vh; letter-spacing: 0.3px; }
-
-        /* 8. 교실 칠판 */
-        .frame-chalk {
-            position: relative;
-            background: #2f4f3a radial-gradient(circle at 30% 20%, rgba(255,255,255,0.07), transparent 60%);
-            border: 18px solid #8d6e63;
-            border-radius: 6px;
-            padding: 1.4vw 1.4vw 4.6vw;
-            box-shadow: inset 0 0 25px rgba(0,0,0,0.6), 0 18px 40px rgba(0,0,0,0.5);
-            max-width: 90vw; max-height: 90vh;
-        }
-        .frame-chalk::after {
-            content: attr(data-title);
-            position: absolute; left: 0; right: 0; bottom: 1.1vw; text-align: center;
-            font-family: 'BMJUA', sans-serif; font-size: 2.2vw; color: rgba(255,255,255,0.88);
-            text-shadow: 0 0 2px rgba(255,255,255,0.5);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2vw;
-        }
-        .frame-chalk .slide-img { max-height: calc(90vh - 36px - 6vw); }
 
         /* 9. 네온 사인 */
         .frame-neon {
@@ -292,6 +282,13 @@
         .th-name i { color: #0095f6; font-size: 0.85em; margin-left: 0.3em; }
         .th-time { color: #999; }
         .th-more { margin-left: auto; color: #000; letter-spacing: 1px; }
+        .th-logo { font-size: calc(var(--u) * 1.6); }
+        .frame-threads { border-top: 0.6vh solid #000; }
+        /* 페이스북 파란 윗줄 (로고 + 글자) */
+        .fb-top { background: #0866ff; color: #fff; height: 5vh; display: flex; align-items: center; gap: 1vh; padding: 0 calc(var(--u) * 0.9); flex-shrink: 0; }
+        .fb-top i { font-size: 3vh; }
+        .fb-word { font: 800 2.9vh/1 "Segoe UI", "Helvetica Neue", Arial, sans-serif; letter-spacing: -0.04em; }
+        .fb-top .fb-top-right { margin-left: auto; display: flex; gap: 1.6vh; font-size: 2.1vh; opacity: 0.9; }
         .th-text { font-size: calc(var(--u) * 1.05); line-height: 1.4; margin: 0.2vh 0 1vh; }
         .th-media { border-radius: calc(var(--u) * 0.8); overflow: hidden; border: 1px solid #eee; align-self: flex-start; }
         .frame-threads .slide-img { max-height: calc(94vh - 22vh); max-width: 100%; display: block; }
@@ -319,7 +316,7 @@
         .fb-more { font-size: calc(var(--u) * 1.3); color: #65676b; letter-spacing: 1px; }
         .fb-text { font-size: var(--u); padding: calc(var(--u) * 0.6) calc(var(--u) * 0.9); width: 0; min-width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .fb-media { background: #f0f2f5; display: flex; justify-content: center; }
-        .frame-fb .slide-img { max-height: calc(94vh - 24vh); max-width: 100%; display: block; }
+        .frame-fb .slide-img { max-height: calc(94vh - 30vh);max-width: 100%; display: block; }
         .fb-react { display: flex; justify-content: space-between; align-items: center; padding: calc(var(--u) * 0.5) calc(var(--u) * 0.9); font-size: calc(var(--u) * 0.85); color: #65676b; border-bottom: 1px solid #ced0d4; margin: 0 calc(var(--u) * 0.9); padding-left: 0; padding-right: 0; }
         .fb-emo { letter-spacing: -0.2em; margin-right: 0.6em; }
         .fb-btns { display: flex; justify-content: space-around; padding: calc(var(--u) * 0.4) 0 calc(var(--u) * 0.5); }
@@ -624,29 +621,22 @@
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-insta" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
-                                <i class="fas fa-heart text-2xl text-pink-400 mb-2"></i>
+                                <i class="fab fa-instagram text-2xl ig-grad mb-2"></i>
                                 <div class="font-bold text-slate-700 text-sm">인스타 피드</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-threads" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
-                                <i class="fas fa-at text-2xl text-slate-800 mb-2"></i>
+                                <i class="fab fa-threads text-2xl text-black mb-2"></i>
                                 <div class="font-bold text-slate-700 text-sm">스레드 피드</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="frame-style" value="frame-fb" class="peer hidden">
                             <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
-                                <i class="fas fa-thumbs-up text-2xl text-blue-600 mb-2"></i>
+                                <i class="fab fa-facebook text-2xl fb-blue mb-2"></i>
                                 <div class="font-bold text-slate-700 text-sm">페이스북 피드</div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="frame-style" value="frame-chalk" class="peer hidden">
-                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
-                                <i class="fas fa-chalkboard text-2xl text-emerald-600 mb-2"></i>
-                                <div class="font-bold text-slate-700 text-sm">교실 칠판</div>
                             </div>
                         </label>
                         <label class="cursor-pointer">
@@ -1365,6 +1355,7 @@
             const name = el('div', 'ig-name', title); name.appendChild(el('i', 'fas fa-circle-check'));
             who.appendChild(name); who.appendChild(el('div', 'ig-place', '우리 교실'));
             head.appendChild(av); head.appendChild(who); head.appendChild(el('div', 'ig-more', '···'));
+            head.appendChild(el('i', 'fab fa-instagram ig-grad ig-logo'));
 
             const media = el('div', 'ig-media');
             media.appendChild(mediaEl);
@@ -1387,6 +1378,7 @@
             foot.appendChild(cap);
             foot.appendChild(el('div', 'ig-time', feedTimes[index % feedTimes.length]));
 
+            content.appendChild(el('div', 'sns-bar ig-bar'));
             content.appendChild(head); content.appendChild(media); content.appendChild(foot);
             // 사진 위 큰 하트가 뜰 때 아래 하트도 빨갛게 채워짐
             setTimeout(() => { like.classList.replace('far', 'fas'); likes && foot.querySelector('.ig-likes') && (foot.querySelector('.ig-likes').textContent = `좋아요 ${likes + 1}개`); }, 1400);
@@ -1405,7 +1397,7 @@
             const name = el('span', 'th-name', title); name.appendChild(el('i', 'fas fa-circle-check'));
             head.appendChild(name);
             head.appendChild(el('span', 'th-time', feedTimes[(index + 2) % feedTimes.length]));
-            head.appendChild(el('span', 'th-more', '···'));
+            head.appendChild(el('i', 'fab fa-threads th-more th-logo'));
             main.appendChild(head);
             main.appendChild(el('div', 'th-text', feedCaptions[(index + 3) % feedCaptions.length]));
             const media = el('div', 'th-media'); media.appendChild(mediaEl); main.appendChild(media);
@@ -1448,7 +1440,13 @@
             const cBtn = el('div', 'fb-btn'); cBtn.appendChild(el('i', 'far fa-comment')); cBtn.appendChild(document.createTextNode(' 댓글 달기'));
             const sBtn = el('div', 'fb-btn'); sBtn.appendChild(el('i', 'fas fa-share')); sBtn.appendChild(document.createTextNode(' 공유하기'));
             [likeBtn, cBtn, sBtn].forEach(b => btns.appendChild(b));
-            [head, text, media, react, btns].forEach(x => content.appendChild(x));
+            const top = el('div', 'fb-top');
+            top.appendChild(el('i', 'fab fa-facebook'));
+            top.appendChild(el('span', 'fb-word', 'facebook'));
+            const tr = el('div', 'fb-top-right');
+            ['fas fa-magnifying-glass', 'fab fa-facebook-messenger', 'fas fa-bell'].forEach(c => tr.appendChild(el('i', c)));
+            top.appendChild(tr);
+            [top, head, text, media, react, btns].forEach(x => content.appendChild(x));
             setTimeout(() => { likeBtn.classList.add('on'); likeBtn.querySelector('i').classList.replace('far', 'fas'); cnt.textContent = `우리 반 친구들 외 ${likes + 1}명`; }, 1400);
         }
 
@@ -1501,7 +1499,7 @@
 
             const content = document.createElement('div');
             content.className = `slide-content ${appSettings.frameStyle}`;
-            content.dataset.title = appSettings.title; // SNS 피드·칠판·네컷 액자에 제목 표시
+            content.dataset.title = appSettings.title; // 액자에 제목 표시용
             content.dataset.date = todayStamp();       // 네컷·캠코더 액자에 날짜 표시
             content.classList.add(effects[Math.floor(Math.random() * effects.length)]);
 
