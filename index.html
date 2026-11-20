@@ -27,10 +27,32 @@
             font-style: normal;
         }
 
+        /* 슬라이드쇼 글자용 폰트 (고르기 기능에서 사용, 실제로 쓸 때만 내려받음) */
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Thin.woff2') format('woff2'); font-weight: 100; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-ExtraLight.woff2') format('woff2'); font-weight: 200; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-SemiBold.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-ExtraBold.woff2') format('woff2'); font-weight: 800; font-display: swap; }
+        @font-face { font-family: 'Heejoy'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611080015@heejoy-thin/heejoy-thin/HEEJOY-Black.woff2') format('woff2'); font-weight: 900; font-display: swap; }
+        @font-face { font-family: 'OngleipParkDahyeon'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2411-3@1.0/Ownglyph_ParkDaHyun.woff2') format('woff2'); font-weight: normal; font-display: swap; }
+        @font-face { font-family: 'CookieRun'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff'); font-weight: normal; font-display: swap; }
+        @font-face { font-family: 'CookieRun'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Bold00.woff') format('woff'); font-weight: 700; font-display: swap; }
+        @font-face { font-family: 'CookieRun'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Black00.woff') format('woff'); font-weight: 900; font-display: swap; }
+        @font-face { font-family: 'OwnglyphYuntaeng'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2608211801@font-160/font-160/%EC%98%A8%EA%B8%80%EC%9E%8E%20%EC%9C%A4%ED%83%B1%EC%B2%B4.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'MitmiFont'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/Ownglyph_meetme-Rg.woff2') format('woff2'); font-weight: normal; font-display: swap; }
+        @font-face { font-family: 'OngleipEoyeonce'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105@1.1/Uiyeun.woff') format('woff'); font-weight: normal; font-display: swap; }
+        @font-face { font-family: 'Mona12'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611030023@color-1792-1712/color-1792-1712/Mona12.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'Mona12'; src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611030026@color-1792-1713/color-1792-1713/Mona12.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
         body { font-family: 'BMDOHYEON', sans-serif; letter-spacing: 0.5px; }
-        
-        /* 슬라이드쇼 오버레이 타이틀은 감성적인 주아체로 */
-        #overlay-title-text { font-family: 'BMJUA', sans-serif; letter-spacing: 1px; }
+
+        /* 슬라이드쇼에 나오는 글자 폰트 (설정에서 고름) */
+        :root { --show-font: 'BMJUA', sans-serif; }
+        #overlay-title-text { font-family: var(--show-font); letter-spacing: 1px; }
+        .booth-title, .ig-name, .ig-caption, .th-name, .th-text, .fb-name, .fb-text { font-family: var(--show-font) !important; }
 
         /* 입력창이나 버튼 안의 작은 글씨들은 가독성을 위해 시스템 기본 폰트 유지 */
         /* 아이콘(<i>)은 제외해야 Font Awesome 아이콘이 네모로 깨지지 않음 */
@@ -581,6 +603,12 @@
                 </div>
                 
                 <div>
+                    <label class="block text-slate-700 font-bold mb-3 text-sm">슬라이드쇼 글자 폰트</label>
+                    <div id="font-choices" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+                    <p class="text-xs text-slate-400 mt-1">시작 화면 제목과 액자 속 글자에 쓰여요. 누르면 바로 바뀌어요.</p>
+                </div>
+
+                <div>
                     <label class="block text-slate-700 font-bold mb-3 text-sm">액자(프레임) 디자인</label>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <label class="cursor-pointer">
@@ -711,6 +739,8 @@
                 <button onclick="toggleSlidePanel(false)" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div class="mb-6">
+                <h2 class="text-xl font-bold text-slate-700 mb-3">글자 폰트</h2>
+                <div id="panel-fonts" class="grid grid-cols-3 gap-2 mb-6"></div>
                 <h2 class="text-xl font-bold text-slate-700 mb-3">액자 디자인</h2>
                 <div id="panel-frames" class="grid grid-cols-3 gap-2"></div>
             </div>
@@ -780,6 +810,55 @@
             document.getElementById('main-title-display').innerHTML = `<i class="fas fa-camera-retro mr-3 text-blue-200"></i>${appSettings.title}`;
             document.getElementById('setting-title').value = appSettings.title;
             document.querySelector(`input[value="${appSettings.frameStyle}"]`).checked = true;
+            applyShowFont();
+        }
+
+        /* ---------- 슬라이드쇼 글자 폰트 고르기 (폰트를 더 넣으려면 여기 한 줄 + 위 @font-face 추가) ---------- */
+        const FONT_OPTIONS = [
+            { key: 'jua', name: '배민 주아', css: "'BMJUA', sans-serif" },
+            { key: 'dohyeon', name: '배민 도현', css: "'BMDOHYEON', sans-serif" },
+            { key: 'heejoy', name: '희조이', css: "'Heejoy', sans-serif" },
+            { key: 'parkdahyeon', name: '온글잎 박다현', css: "'OngleipParkDahyeon', sans-serif" },
+            { key: 'uiyeon', name: '온글잎 의연', css: "'OngleipEoyeonce', sans-serif" },
+            { key: 'mona12', name: 'Mona12', css: "'Mona12', sans-serif" },
+            { key: 'cookierun', name: '쿠키런', css: "'CookieRun', sans-serif" },
+            { key: 'yuntaeng', name: '온글잎 윤탱', css: "'OwnglyphYuntaeng', sans-serif" },
+            { key: 'mitmi', name: '온글잎 밋미', css: "'MitmiFont', sans-serif" }
+        ];
+        function currentFont() { return FONT_OPTIONS.find(f => f.key === appSettings.fontKey) || FONT_OPTIONS[0]; }
+        function applyShowFont() {
+            document.documentElement.style.setProperty('--show-font', currentFont().css);
+            renderFontChoices('font-choices');
+            renderFontChoices('panel-fonts');
+        }
+        function renderFontChoices(boxId) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+            box.innerHTML = '';
+            const cur = currentFont().key;
+            FONT_OPTIONS.forEach(f => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `rounded-xl border-2 px-2 py-2 text-center transition ${f.key === cur ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`;
+                const sample = document.createElement('div');
+                sample.style.fontFamily = f.css;
+                sample.className = 'text-slate-800';
+                sample.style.fontSize = '20px';
+                sample.style.lineHeight = '1.3';
+                sample.textContent = '오늘도 맑음';
+                const label = document.createElement('div');
+                label.className = 'text-xs text-slate-500 mt-0.5';
+                label.textContent = f.name;
+                btn.appendChild(sample); btn.appendChild(label);
+                btn.onclick = () => setShowFont(f.key);
+                box.appendChild(btn);
+            });
+        }
+        async function setShowFont(key) {
+            appSettings.fontKey = key;
+            try { localStorage.setItem('classPhotoSettings', JSON.stringify(appSettings)); } catch (e) {}
+            if (db) { try { await db.collection("settings").doc("mainConfig").set(appSettings); } catch (e) {} }
+            applyShowFont();
         }
 
         async function saveSettings() {
