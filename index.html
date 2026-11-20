@@ -283,6 +283,61 @@
         }
         .frame-sticker .slide-img { border-radius: 16px; max-height: calc(86vh - 34px); }
 
+        /* 11. 네컷 사진관 (사진관 스티커 사진 느낌) */
+        .frame-booth {
+            position: relative;
+            background: #161616;
+            padding: 1.4vw 1.4vw 11vh;
+            border-radius: 6px;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.45);
+            max-width: 88vw; max-height: 92vh;
+        }
+        .frame-booth .slide-img { border: 0.35vh solid #fff; max-height: calc(92vh - 1.4vw - 11vh); }
+        .frame-booth::after {
+            content: '♡ ' attr(data-title) ' ♡' '\A' attr(data-date);
+            white-space: pre;
+            position: absolute; left: 0; right: 0; bottom: 2.2vh;
+            text-align: center; color: #fff; line-height: 1.5;
+            font-family: 'BMJUA', sans-serif; font-size: 2.6vh; letter-spacing: 1px;
+        }
+
+        /* 12. 레트로 캠코더 (뷰파인더 화면) */
+        .frame-camcorder {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.5);
+            max-width: 90vw; max-height: 90vh;
+        }
+        .frame-camcorder .slide-img { max-height: 90vh; filter: contrast(1.06) saturate(1.2) sepia(0.08); }
+        .frame-camcorder::before {
+            content: '● REC';
+            position: absolute; top: 4.5%; left: 5%; z-index: 2;
+            color: #ff3b30; font: 700 3vh 'Courier New', monospace; letter-spacing: 2px;
+            text-shadow: 0 0 6px rgba(0,0,0,0.6);
+            animation: recBlink 1.2s steps(1) infinite;
+        }
+        @keyframes recBlink { 50% { opacity: 0.15; } }
+        .frame-camcorder::after {
+            content: 'PLAY ▶  ' attr(data-date);
+            position: absolute; inset: 3%;
+            display: flex; align-items: flex-end; justify-content: flex-end;
+            padding: 1.5vh 2vh;
+            color: #fff; font: 700 2.6vh 'Courier New', monospace; letter-spacing: 2px;
+            text-shadow: 0 0 6px rgba(0,0,0,0.8);
+            pointer-events: none;
+            background:
+                linear-gradient(#fff, #fff) top left / 5vh 0.5vh no-repeat,
+                linear-gradient(#fff, #fff) top left / 0.5vh 5vh no-repeat,
+                linear-gradient(#fff, #fff) top right / 5vh 0.5vh no-repeat,
+                linear-gradient(#fff, #fff) top right / 0.5vh 5vh no-repeat,
+                linear-gradient(#fff, #fff) bottom left / 5vh 0.5vh no-repeat,
+                linear-gradient(#fff, #fff) bottom left / 0.5vh 5vh no-repeat,
+                linear-gradient(#fff, #fff) bottom right / 5vh 0.5vh no-repeat,
+                linear-gradient(#fff, #fff) bottom right / 0.5vh 5vh no-repeat;
+        }
+
         /* 액자 미리보기 (설정 창 뒤) */
         #frame-preview-stage { right: 0; }
         #frame-preview-stage .slide-content { transform: scale(0.8); }
@@ -552,6 +607,20 @@
                                 <div class="font-bold text-slate-700 text-sm">스티커</div>
                             </div>
                         </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-booth" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-camera text-2xl text-slate-800 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">네컷 사진관</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="frame-style" value="frame-camcorder" class="peer hidden">
+                            <div class="border-2 border-slate-200 rounded-xl p-4 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition">
+                                <i class="fas fa-video text-2xl text-red-500 mb-2"></i>
+                                <div class="font-bold text-slate-700 text-sm">레트로 캠코더</div>
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -715,6 +784,11 @@
                 <g transform="translate(470 470)"><rect width="260" height="170" fill="#ffb4a2"/><polygon points="-20,0 130,-90 280,0" fill="#e5707e"/><rect x="105" y="95" width="50" height="75" fill="#8d5b4c"/><rect x="30" y="40" width="50" height="40" fill="#fff"/><rect x="180" y="40" width="50" height="40" fill="#fff"/></g>
             </svg>`);
 
+        function todayStamp() {
+            const d = new Date();
+            return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+        }
+
         function renderFramePreview() {
             const stage = document.getElementById('frame-preview-stage');
             if (!stage) return;
@@ -728,6 +802,7 @@
             const content = document.createElement('div');
             content.className = `slide-content ${style}`;
             content.dataset.title = title;
+            content.dataset.date = todayStamp();
             const img = document.createElement('img');
             img.className = 'slide-img';
             img.src = firstPhoto ? firstPhoto.url : SAMPLE_PHOTO;
@@ -1223,7 +1298,8 @@
 
             const content = document.createElement('div');
             content.className = `slide-content ${appSettings.frameStyle}`;
-            content.dataset.title = appSettings.title; // SNS 피드·칠판 액자에 제목 표시
+            content.dataset.title = appSettings.title; // SNS 피드·칠판·네컷 액자에 제목 표시
+            content.dataset.date = todayStamp();       // 네컷·캠코더 액자에 날짜 표시
             content.classList.add(effects[Math.floor(Math.random() * effects.length)]);
 
             const currentItem = mediaItems[index];
